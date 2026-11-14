@@ -149,12 +149,12 @@
           <button class="btn" id="btnCyc3" onclick="setCycles(3)">3 cycles</button>
         </div>
         <p class="hint">Each cycle is a separate change tested in turn. Points are counted from when that cycle's change went in until the next cycle started.</p>
-        <label class="lbl" style="margin-top:12px">What are you claiming?</label>
+        <label class="lbl" style="margin-top:12px">Which data should the assessment judge?</label>
         <div class="btn-row">
-          <button class="btn active" id="btnSus" onclick="setSustained(true)">The gain has held since my first change</button>
-          <button class="btn" id="btnLat" onclick="setSustained(false)">Judge only the latest cycle</button>
+          <button class="btn active" id="btnSus" onclick="setSustained(true)">All points since the first change</button>
+          <button class="btn" id="btnLat" onclick="setSustained(false)">Only the final PDSA cycle's points</button>
         </div>
-        <p class="hint" id="hintSus">Sustained (recommended for an end-of-project assessment): every point after your first change is pooled together as evidence of where the process now sits. Latest-cycle: only the points after your final change are judged against baseline.</p>
+        <p class="hint" id="hintSus"><strong>All points</strong> (recommended) pools every point collected since your first change and asks where the process now sits. If performance peaked in an earlier cycle and dipped slightly, the dip pulls the pooled level down a little — an honest, slightly conservative picture. <strong>Final cycle only</strong> judges just the points after your last change — stricter, and the right choice if that final level is the one you expect the process to keep. If the two options give very different answers, that gap is itself a finding worth reporting.</p>
         <div id="rawRows">
           <div class="med-row" id="rowRBase" style="margin-top:14px">
             <label class="lbl" for="rawBase" id="lblBase">Baseline values (comma or space separated, in time order)</label>
@@ -254,7 +254,7 @@
         </details>
         <details>
           <summary>Assumptions behind the estimate</summary>
-          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated bar, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all post-change points pooled (the sustained claim) or your final cycle only, depending on what you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
+          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated bar, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all points since the first change pooled together, or your final cycle's points only, depending on which you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
         </details>
       </div>
     </div>
@@ -423,7 +423,7 @@ if(typeof document!=='undefined'){
       $('rowR'+p.id).classList.toggle('hide',i>cycles);
     });
     for(var c=1;c<=3;c++)$('btnCyc'+c).className='btn'+(c===cycles?' active':'');
-    $('verdictQ').textContent=cycles>1&&window.sustained?'Chance your project genuinely improved the process (gain held since your first change):':'Chance your project genuinely improved the process:';
+    $('verdictQ').textContent=cycles>1&&window.sustained?'Chance your project genuinely improved the process (all points since the first change):':'Chance your project genuinely improved the process:';
   }
   window.setCycles=function(c){cycles=c;showPhases();updateAll()};
   window.setSustained=function(s){
@@ -490,7 +490,7 @@ if(typeof document!=='undefined'){
         if(window.sustained&&cycles>1){
           var pool=[];
           for(var j=1;j<o.ph.length;j++)pool=pool.concat(arrs[j]);
-          o.end={name:'all '+pool.length+' post-change points',k:pool.length,arr:pool,med:med(pool)};
+          o.end={name:'all '+pool.length+' points since the first change',k:pool.length,arr:pool,med:med(pool)};
         }else o.end=o.ph[cycles];
       }
     }
@@ -533,7 +533,7 @@ if(typeof document!=='undefined'){
         lines.push('After '+p.name+': '+(sh>0?'<strong>'+shiftTxt(cont,sh)+'</strong> better than baseline':sh<0?'<strong>'+shiftTxt(cont,sh)+'</strong> worse than baseline':'no change from baseline'));
       }
       if(lines.length)$('hintShift').innerHTML=lines.join('<br>');
-      if(window.sustained&&cycles>1&&o.end)$('hintShift').innerHTML+='<br><strong>Claiming sustained:</strong> all '+o.end.k+' post-change points pooled, median '+(cont?fmt(o.end.med,1):fmt(o.end.med*100,0)+'%')+'.';
+      if(window.sustained&&cycles>1&&o.end)$('hintShift').innerHTML+='<br><strong>Using all '+o.end.k+' points since the first change</strong> (pooled median '+(cont?fmt(o.end.med,1):fmt(o.end.med*100,0)+'%')+').';
     }
   }
   function shiftTxt(cont,t){return fmt(Math.abs(t)*100,0)+(cont?'%':' percentage points')}
