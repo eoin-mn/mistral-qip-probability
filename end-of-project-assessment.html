@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 10 -->
+<!-- EmergApps end-of-project assessment — version 11 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V10</title>
+<title>Mistral calc V11</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -729,7 +729,7 @@ if(typeof document!=='undefined'){
     if(!flipped){
       var estTxt=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' percentage points';
       barSub='Your chart moved '+shiftTxt(cont,tObs)+' versus baseline; allowing for luck, the best guess at the true gain is <strong>'+estTxt+'</strong>, against your target of <strong>'+shiftTxt(cont,o.mid)+'</strong>.';
-      if(!cont&&tObs>o.mid&&r.pMid<0.5)barSub+=' With only '+n+' patients behind each point, a chart this good is what a true improvement of about '+estTxt+' typically looks like — a small sample flatters the chart, which is why the chance sits below 50%.';
+      if(!cont&&tObs>o.mid&&r.pMid<0.5)barSub+=' With only '+n+' patients behind each point, a chart this good is what a true improvement of about '+estTxt+' typically looks like — and with so little data, part of the jump may be luck, which is why the chance sits below 50%.';
     }
     setBarCard(barBand,barPill,barBig,barWord,barSub);
     if(flipped){
