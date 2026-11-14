@@ -48,10 +48,12 @@
     font-size: 0.9rem; font-family: inherit; resize: vertical; background: #fffdf9;
   }
 
-  .verdict { text-align: center; padding: 30px 22px 26px; }
-  .verdict .q { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #a39a89; }
-  .verdict .big { font-size: 3.4rem; font-weight: 800; line-height: 1.1; margin: 10px 0 4px; }
-  .verdict .big-word { font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; }
+  .verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 760px) { .verdicts { grid-template-columns: 1fr; } }
+  .verdict { text-align: center; padding: 24px 16px 22px; }
+  .verdict .q { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #a39a89; line-height: 1.5; }
+  .verdict .big { font-size: 2.9rem; font-weight: 800; line-height: 1.1; margin: 10px 0 4px; }
+  .verdict .big-word { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
   .verdict .odds { font-size: 1.05rem; color: #3d382e; }
   .verdict .odds2 { font-size: 0.95rem; color: #6f675a; margin-top: 6px; }
   .pbar { height: 10px; border-radius: 999px; background: #f0e9db; overflow: hidden; margin: 16px auto 4px; max-width: 340px; }
@@ -207,14 +209,23 @@
 
     <!-- OUTPUT -->
     <div>
-      <div class="card verdict" id="verdictCard">
-        <div class="q" id="verdictQ">Chance your project genuinely improved the process:</div>
-        <div class="big" id="bigPct">–</div>
-        <div class="big-word" id="bigWord">–</div>
-        <div class="pbar"><i id="pbarFill"></i></div>
-        <div class="odds" id="oddsLine">–</div>
-        <div class="odds2" id="oddsLine2"></div>
-        <span class="pill" id="pill">…</span>
+      <div class="verdicts">
+        <div class="card verdict" id="verdictCard">
+          <div class="q" id="verdictQ">Chance your project genuinely improved the process:</div>
+          <div class="big" id="bigPct">–</div>
+          <div class="big-word" id="bigWord">–</div>
+          <div class="pbar"><i id="pbarFill"></i></div>
+          <div class="odds2" id="oddsLine"></div>
+          <span class="pill" id="pill">…</span>
+        </div>
+        <div class="card verdict" id="barCard">
+          <div class="q" id="barQ">Chance the improvement reaches your bar:</div>
+          <div class="big" id="barPct">–</div>
+          <div class="big-word" id="barWord">–</div>
+          <div class="pbar"><i id="barFill"></i></div>
+          <div class="odds2" id="barSub"></div>
+          <span class="pill" id="barPill">…</span>
+        </div>
       </div>
 
       <div class="advice">
@@ -424,6 +435,7 @@ if(typeof document!=='undefined'){
     });
     for(var c=1;c<=3;c++)$('btnCyc'+c).className='btn'+(c===cycles?' active':'');
     $('verdictQ').textContent=cycles>1&&window.sustained?'Chance your project genuinely improved the process (all points since the first change):':'Chance your project genuinely improved the process:';
+    $('barQ').textContent='Chance the improvement reaches your bar'+(type?(type==='continuous'?' (%)':' (percentage points)'):'')+':';
   }
   window.setCycles=function(c){cycles=c;showPhases();updateAll()};
   window.setSustained=function(s){
@@ -466,7 +478,8 @@ if(typeof document!=='undefined'){
   }
   function showWaiting(o,clicked){
     var list=o.miss.length?'Still to set: <strong>'+o.miss.join('</strong>, <strong>')+'</strong>.':(o.bad?'<strong>'+o.bad+'</strong>':'All inputs are set. Press <strong>Assess my project</strong> to see the result.');
-    setCard('','NOT ASSESSED YET','Not assessed','Complete every step, then press the button',list,'');
+    setCard('','NOT ASSESSED YET','Not assessed','Complete every step, then press the button',list);
+    setBarCard('','AWAITING DATA','–','Press the button to assess','');
     clearBoxes();drawChart(null);
   }
   function state(){
@@ -537,13 +550,21 @@ if(typeof document!=='undefined'){
     }
   }
   function shiftTxt(cont,t){return fmt(Math.abs(t)*100,0)+(cont?'%':' percentage points')}
-  function setCard(band,pill,big,word,odds,odds2){
+  function setCard(band,pill,big,word,note){
     $('verdictCard').className='card verdict'+(band?' '+band:'');
     $('pill').className='pill'+(band?' '+band:'');$('pill').textContent=pill;
     $('bigPct').textContent=big;$('bigWord').textContent=word;
-    $('oddsLine').innerHTML=odds;$('oddsLine2').innerHTML=odds2||'';
+    $('oddsLine').innerHTML=note||'';
     var pc=/%$/.test(big)?parseFloat(big):0;
     $('pbarFill').style.width=(isFinite(pc)?pc:0)+'%';
+  }
+  function setBarCard(band,pill,big,word,sub){
+    $('barCard').className='card verdict'+(band?' '+band:'');
+    $('barPill').className='pill'+(band?' '+band:'');$('barPill').textContent=pill;
+    $('barPct').textContent=big;$('barWord').textContent=word;
+    $('barSub').innerHTML=sub||'';
+    var pc=/%$/.test(big)?parseFloat(big):0;
+    $('barFill').style.width=(isFinite(pc)?pc:0)+'%';
   }
   function clearBoxes(){$('boxNow').innerHTML='';$('boxEffect').innerHTML='';$('boxCycles').innerHTML='';$('boxQuality').innerHTML=''}
 
@@ -552,7 +573,7 @@ if(typeof document!=='undefined'){
   function compute(){
     var o=state();
     if(o.miss.length){showWaiting(o,true);return}
-    if(o.bad){setCard('','NO RESULT','Not calculable','Check your data','<strong>'+o.bad+'</strong>','');clearBoxes();drawChart(null);return}
+    if(o.bad){setCard('','NO RESULT','Not calculable','Check your data','<strong>'+o.bad+'</strong>');setBarCard('','NO RESULT','–','Check your data','');clearBoxes();drawChart(null);return}
     var my=++token;
     var a=o.ph[0],e=o.end,cont=o.cont;
     var base=a.med,post=e.med,tObs=shiftOf(cont,o.up,base,post);
@@ -587,13 +608,18 @@ if(typeof document!=='undefined'){
     var thin=cn.length>0;
     var band,word,pill;
     if(flipped){band='red';word='Your end data look no better than baseline';pill='NO IMPROVEMENT SHOWN';}
-    else if(pc>=95){band='green';word=(pm!==null&&pm>=50)?(thin?'Real, clears your bar — thin data':'Real, and it clears your bar'):'Real, but probably below your bar';pill=(pm!==null&&pm>=50)?(thin?'REAL — THIN DATA':'REAL, BAR CLEARED'):'REAL, BAR NOT CLEARED';}
-    else if(pc>=85){band='amber';word='Probably real'+(pm!==null&&pm>=50?' and near your bar':'');pill='PROBABLY REAL';}
+    else if(pc>=95){band='green';word=thin?'Real, but the data set is thin':'Real';pill=thin?'REAL — THIN DATA':'REAL';}
+    else if(pc>=85){band='amber';word='Probably real';pill='PROBABLY REAL';}
     else if(pc>=60){band='amber';word='A hint of improvement, not yet convincing';pill='NOT CONVINCING';}
     else{band='red';word='Little evidence of a real improvement';pill='NOT SHOWN';}
-    setCard(band,pill,pc+'%',word,
-      pm===null?'Chance the improvement reaches your bar ('+shiftTxt(cont,o.mid)+'): <strong>–</strong>':'Chance the improvement reaches your bar ('+shiftTxt(cont,o.mid)+'): <strong>'+pctTxt(r.pMid)+'</strong>',
-      'Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.');
+    setCard(band,pill,pc+'%',word);
+    $('barQ').textContent='Chance the improvement reaches your bar ('+shiftTxt(cont,o.mid)+'):';
+    var barBand,barBig,barWord,barPill;
+    if(flipped){barBand='red';barBig='–';barWord='No improvement to judge against your bar';barPill='NOT APPLICABLE';}
+    else if(pm>=50){barBand='green';barBig=pctTxt(r.pMid);barWord='More likely than not to clear your bar';barPill='BAR CLEARED';}
+    else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could clear your bar, but more likely not';barPill='BAR NOT CLEARED';}
+    else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your bar';barPill='BAR NOT CLEARED';}
+    setBarCard(barBand,barPill,barBig,barWord,'Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.');
     if(flipped){
       $('boxNow').innerHTML='<strong>What this means</strong>Your end-phase median is not better than your baseline, so the data give little support to "the project worked". If anything they point the other way. Check the direction setting in step 1 if this contradicts your chart, and be cautious about attributing the change to anything but noise or context.';
       $('boxEffect').innerHTML='<strong>The improvement you got</strong>No improvement to size up: the end level did not beat baseline. If your change had done nothing, your end median would plausibly have landed between <strong>'+(cont?fmt(r.env[0]*base,1)+' to '+fmt(r.env[1]*base,1):fmt(r.env[0]*100,0)+'% to '+fmt(r.env[1]*100,0)+'%')+'</strong> by luck alone (given a baseline level of '+(cont?fmt(base,1):fmt(base*100,0)+'%')+').';
