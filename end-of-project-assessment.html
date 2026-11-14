@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 7 -->
+<!-- EmergApps end-of-project assessment — version 8 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V7</title>
+<title>Mistral calc V8</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -196,8 +196,8 @@
 
       <div class="step">
         <div class="step-head"><span class="step-num">5</span><h2>The smallest improvement that would matter</h2></div>
-        <p class="hint" style="margin-top:8px">Decide this <strong>before</strong> looking at the result: how big a gain would justify keeping the change and calling the project a success? The assessment below is judged against this bar, not against whatever shift happened to appear.</p>
-        <label class="lbl" for="mid" id="lblMid" style="margin-top:10px">Smallest improvement that matters (%)</label>
+        <p class="hint" style="margin-top:8px">Decide this <strong>before</strong> looking at the result: how big a gain would justify keeping the change and calling the project a success? This is your target. The assessment below is judged against this target, not against whatever shift happened to appear.</p>
+        <label class="lbl" for="mid" id="lblMid" style="margin-top:10px">Your target — smallest improvement that matters (%)</label>
         <input type="number" id="mid" min="0.5" step="0.5" placeholder="e.g. 15" oninput="updateAll()">
         <p class="hint" id="hintMid"></p>
       </div>
@@ -220,7 +220,7 @@
           <span class="pill" id="pill">…</span>
         </div>
         <div class="card verdict" id="barCard">
-          <div class="q" id="barQ">Chance the improvement reaches your bar:</div>
+          <div class="q" id="barQ">Chance the true gain is as big as your target:</div>
           <div class="big" id="barPct">–</div>
           <div class="big-word" id="barWord">–</div>
           <div class="pbar"><i id="barFill"></i></div>
@@ -254,7 +254,7 @@
         </details>
         <details>
           <summary>Why judge it against a "smallest improvement that matters"?</summary>
-          <p>Declaring success on any shift at all rewards flukes: tiny, worthless improvements can look impressive in small samples. Deciding the bar in advance — the gain that would actually justify keeping the change — and then asking "did we clear it?" keeps you honest. The tool gives two graded answers: the chance that anything real happened at all, and the chance that what happened reaches your bar. A project can be genuinely improved and still fall short of the bar; that is a real finding, not a failure of the maths.</p>
+          <p>Declaring success on any shift at all rewards flukes: tiny, worthless improvements can look impressive in small samples. Deciding the target in advance — the gain that would actually justify keeping the change — and then asking "did we reach it?" keeps you honest. The tool gives two graded answers: the chance that anything real happened at all, and the chance that the true gain is as big as your target. A project can be genuinely improved and still fall short of its target; that is a real finding, not a failure of the maths.</p>
         </details>
         <details>
           <summary>How is this different from a run chart or the earlier calculator?</summary>
@@ -266,7 +266,7 @@
         </details>
         <details>
           <summary>Assumptions behind the estimate</summary>
-          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated bar, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point; for proportion data the bar and effect figures are instead computed exactly from your points, given the binomial model. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all points since the first change pooled together, or your final cycle's points only, depending on which you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
+          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated target, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point; for proportion data the target and effect figures are instead computed exactly from your points, given the binomial model. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all points since the first change pooled together, or your final cycle's points only, depending on which you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
         </details>
       </div>
     </div>
@@ -498,7 +498,7 @@ if(typeof document!=='undefined'){
     });
     for(var c=1;c<=3;c++)$('btnCyc'+c).className='btn'+(c===cycles?' active':'');
     $('verdictQ').textContent=cycles>1&&window.sustained?'Chance your project genuinely improved the process (all points since the first change):':'Chance your project genuinely improved the process:';
-    $('barQ').textContent='Chance the improvement reaches your bar'+(type?(type==='continuous'?' (%)':' (percentage points)'):'')+':';
+    $('barQ').textContent='Chance the true gain is as big as your target'+(type?(type==='continuous'?' (%)':' (percentage points)'):'')+':';
   }
   window.setCycles=function(c){cycles=c;showPhases();updateAll()};
   window.setSustained=function(s){
@@ -520,7 +520,7 @@ if(typeof document!=='undefined'){
       var unit=t==='continuous'?' (times or amounts)':' (as percentages, e.g. 82)';
       $('lbl'+p.id).textContent=nm+' (comma or space separated, in time order)'+unit;
     });
-    $('lblMid').textContent='Smallest improvement that matters '+(t==='continuous'?'(%)':'(percentage points)');
+    $('lblMid').textContent='Your target — smallest improvement that matters '+(t==='continuous'?'(%)':'(percentage points)');
     $('hintMid').innerHTML=t==='continuous'?'For times, enter a percentage: <strong>15</strong> means the true level must be at least 15% better (e.g. faster) than baseline.':'Enter percentage points: <strong>10</strong> means the true level must be at least 10 points higher (or lower, per your direction) than baseline.';
     renderNButtons();updateAll();
   };
@@ -579,10 +579,10 @@ if(typeof document!=='undefined'){
       else o.miss.push('step 4: how much variation');
     }
     var mv=parseFloat($('mid').value);
-    if(!isFinite(mv)||mv<=0)o.miss.push('step 5: the smallest improvement that matters');
+    if(!isFinite(mv)||mv<=0)o.miss.push('step 5: your target (smallest improvement that matters)');
     else{
       o.mid=mv/100;
-      if(!o.cont&&o.ph[0].med!==null&&o.ph[0].med+o.mid>0.995)o.bad='Your bar sits at or above 100% — no data could ever clear it. Choose a smaller bar.';
+      if(!o.cont&&o.ph[0].med!==null&&o.ph[0].med+o.mid>0.995)o.bad='Your target sits at or above 100% — no data could ever reach it. Choose a smaller target.';
     }
     return o;
   }
@@ -676,16 +676,16 @@ if(typeof document!=='undefined'){
     else if(pc>=60){band='amber';word='A hint of improvement, not yet convincing';pill='NOT CONVINCING';}
     else{band='red';word='Little evidence of a real improvement';pill='NOT SHOWN';}
     setCard(band,pill,pc+'%',word);
-    $('barQ').textContent='Chance the improvement reaches your bar ('+shiftTxt(cont,o.mid)+'):';
+    $('barQ').textContent='Chance the true gain is as big as your target ('+shiftTxt(cont,o.mid)+'):';
     var barBand,barBig,barWord,barPill;
-    if(flipped){barBand='red';barBig='–';barWord='No improvement to judge against your bar';barPill='NOT APPLICABLE';}
-    else if(pm>=50){barBand='green';barBig=pctTxt(r.pMid);barWord='More likely than not to clear your bar';barPill='BAR CLEARED';}
-    else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could clear your bar, but more likely not';barPill='BAR NOT CLEARED';}
-    else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your bar';barPill='BAR NOT CLEARED';}
+    if(flipped){barBand='red';barBig='–';barWord='No improvement to judge against your target';barPill='NOT APPLICABLE';}
+    else if(pm>=50){barBand='green';barBig=pctTxt(r.pMid);barWord='More likely than not your target was reached';barPill='TARGET REACHED';}
+    else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could reach your target, but more likely not';barPill='TARGET NOT REACHED';}
+    else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your target';barPill='TARGET NOT REACHED';}
     var barSub='Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.';
     if(!flipped){
-      var estTxt=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' pp';
-      barSub='Your chart moved '+shiftTxt(cont,tObs)+' versus baseline; allowing for luck, the best guess at the true improvement is <strong>'+estTxt+'</strong>, against your bar of <strong>'+shiftTxt(cont,o.mid)+'</strong>.';
+      var estTxt=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' percentage points';
+      barSub='Your chart moved '+shiftTxt(cont,tObs)+' versus baseline; allowing for luck, the best guess at the true gain is <strong>'+estTxt+'</strong>, against your target of <strong>'+shiftTxt(cont,o.mid)+'</strong>.';
       if(!cont&&tObs>o.mid&&r.pMid<0.5)barSub+=' With only '+n+' patients behind each point, a chart this good is what a true improvement of about '+estTxt+' typically looks like — a small sample flatters the chart, which is why the chance sits below 50%.';
     }
     setBarCard(barBand,barPill,barBig,barWord,barSub);
@@ -698,19 +698,19 @@ if(typeof document!=='undefined'){
     $('boxNow').innerHTML='<strong>What this means</strong>'+
       (pc>=95?
         ((pm!==null&&pm>=50)?
-          (thin?'A real improvement that clears your bar is the best explanation for your chart. But the data set falls short of good practice ('+cn.join('; ')+'), so treat it as earned-on-balance, not settled.':'A real improvement that clears your bar is the best explanation for your chart. Record it as a success, and keep an eye on the process to check it holds.')
-          :'Something real probably happened, but the best guess is that it falls short of the bar you set. That is worth knowing: the change may not be worth its cost unless it is cheap and harmless.')
+          (thin?'A real improvement big enough to meet your target is the best explanation for your chart. But the data set falls short of good practice ('+cn.join('; ')+'), so treat it as earned-on-balance, not settled.':'A real improvement big enough to meet your target is the best explanation for your chart. Record it as a success, and keep an eye on the process to check it holds.')
+          :'Something real probably happened, but the best guess is that it falls short of the target you set. That is worth knowing: the change may not be worth its cost unless it is cheap and harmless.')
         :pc>=85?'Probably a real improvement, but luck is not ruled out. If the project is finished, report it as promising with the uncertainty stated; do not overclaim.'
         :pc>=60?'There are signs of improvement, but your data cannot rule out luck. If more data can still be collected, that is the cheapest way to find out.'
         :'Your data are consistent with the process simply being unchanged. If the chart looks no better than baseline, the honest end-of-project answer is that the improvement is not demonstrated.')+
       (cont===false&&n<10?' Each of your points is a proportion from only <strong>'+n+' patients</strong> — a single point can swing about <strong>±'+fmt(200*Math.sqrt((o.ph[0].med*(1-o.ph[0].med))/n),0)+' percentage points</strong> by luck. More patients per point is usually a cheaper route to certainty than more points.':'');
     var envTxt=cont?fmt(r.env[0]*base,1)+' to '+fmt(r.env[1]*base,1):fmt(r.env[0]*100,0)+'% to '+fmt(r.env[1]*100,0)+'%';
-    var est=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' pp';
-    var lo=cont?fmt(r.loDelta*100,0)+'%':fmt(r.loDelta*100,1)+' pp';
-    var hi=cont?fmt(r.hiDelta*100,0)+'%':fmt(r.hiDelta*100,1)+' pp';
+    var est=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' percentage points';
+    var lo=cont?fmt(r.loDelta*100,0)+'%':fmt(r.loDelta*100,1)+' percentage points';
+    var hi=cont?fmt(r.hiDelta*100,0)+'%':fmt(r.hiDelta*100,1)+' percentage points';
     var cls=pm>=50?'bar-hit':'bar-miss';
     $('boxEffect').innerHTML='<strong>The improvement you got</strong>'+
-      'Best single guess at the true improvement: <strong>'+est+'</strong>. Your chart is compatible with any true improvement from <strong>'+lo+'</strong> to <strong>'+hi+'</strong> (80% compatible range). Your bar was <strong>'+shiftTxt(cont,o.mid)+'</strong> — the chance the true improvement clears it is <b class="'+cls+'">'+pctTxt(r.pMid)+'</b>.'+
+      'Best single guess at the true gain: <strong>'+est+'</strong>. Your chart is compatible with any true gain from <strong>'+lo+'</strong> to <strong>'+hi+'</strong> (80% compatible range). Your target was <strong>'+shiftTxt(cont,o.mid)+'</strong> — the chance the true gain is big enough to reach it is <b class="'+cls+'">'+pctTxt(r.pMid)+'</b>.'+
       '<br><br>If your change had done nothing, your end median would plausibly have landed between <strong>'+envTxt+'</strong> by luck alone (given a baseline level of '+(cont?fmt(base,1):fmt(base*100,0)+'%')+').';
     var li=st.res.map(function(q){var c=q.s==='fail'?(q.soft?'warn':'bad'):q.s==='pass'?'ok':'';return '<li><b class="'+c+'">'+(q.s==='fail'?'Concern':q.s==='pass'?'Pass':'Not enough points')+'</b> '+q.name+'</li>'}).join('');
     $('boxQuality').innerHTML='<strong>Quality of your data</strong><ul>'+li+'</ul>'+
@@ -731,7 +731,7 @@ if(typeof document!=='undefined'){
       if(my!==token)return;
       if(ri>=rows.length){
         $('boxCycles').innerHTML='<strong>Cycle by cycle</strong><p>"Compared with baseline" asks whether the process after that cycle was better than where you began. "Compared with" the previous cycle asks whether that cycle added anything on top of the one before. The shaded row is the headline result above.</p>'+
-          '<div class="tbl-scroll"><table class="cyc"><thead><tr><th>Comparison</th><th>Shift</th><th>Chance real</th><th>Chance ≥ bar</th></tr></thead><tbody>'+html+'</tbody></table></div>';
+          '<div class="tbl-scroll"><table class="cyc"><thead><tr><th>Comparison</th><th>Shift</th><th>Chance real</th><th>Chance ≥ target</th></tr></thead><tbody>'+html+'</tbody></table></div>';
         return;
       }
       var r=rows[ri++],A=o.ph[r.a],B=o.ph[r.b];
