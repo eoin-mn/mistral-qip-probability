@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 9 -->
+<!-- EmergApps end-of-project assessment — version 10 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V9</title>
+<title>Mistral calc V10</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -653,7 +653,7 @@ if(typeof document!=='undefined'){
       if(p.arr&&p.arr.length>=2){
         var s=p.arr.slice().sort(function(x,y){return x-y});
         if(s.length>=4){
-          varTxt='middle half of points between <strong>'+fmt(quantile(s,0.25)*scale,d)+unit+'</strong> and <strong>'+fmt(quantile(s,0.75)*scale,d)+unit+'</strong>';
+          varTxt='interquartile range of points <strong>'+fmt(quantile(s,0.25)*scale,d)+unit+'</strong> to <strong>'+fmt(quantile(s,0.75)*scale,d)+unit+'</strong>';
         }else{
           varTxt='points ranged from <strong>'+fmt(s[0]*scale,d)+unit+'</strong> to <strong>'+fmt(s[s.length-1]*scale,d)+unit+'</strong>';
         }
