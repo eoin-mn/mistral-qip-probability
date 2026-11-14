@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 6 -->
+<!-- EmergApps end-of-project assessment — version 7 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V6</title>
+<title>Mistral calc V7</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -328,30 +328,56 @@ function drawFinal(o,delta,R){
   return a;
 }
 function shiftsFrom(o,bd,fd){var s=new Array(bd.length),i;for(i=0;i<bd.length;i++)s[i]=shiftOf(o.cont,o.up,bd[i],fd[i]);return s}
-// Exact binomial CDF: P(X <= k) for X ~ Binom(m, t)
-function binomLE(k,m,t){
-  if(k<0)return 0;if(k>=m)return 1;if(t<=0)return 1;if(t>=1)return 0;
-  var lf=new Array(m+1),i,s=0;lf[0]=0;
-  for(i=1;i<=m;i++)lf[i]=lf[i-1]+Math.log(i);
-  for(i=0;i<=k;i++)s+=Math.exp(lf[m]-lf[i]-lf[m-i]+i*Math.log(t)+(m-i)*Math.log(1-t));
-  return Math.min(1,s);
+// Log-gamma and regularised incomplete beta (continued fraction), so the posterior
+// on the true end rate can be evaluated exactly even with fractional patient counts
+// (e.g. 75% from 6 patients = 4.5 patients, kept as 4.5 rather than rounded).
+function logGamma(x){
+  var G=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+  var j,y=x,tmp=x+5.5,s=1.000000000190015;
+  tmp-=(x+0.5)*Math.log(tmp);
+  for(j=0;j<6;j++)s+=G[j]/++y;
+  return -tmp+Math.log(2.5066282746310005*s/x);
+}
+function betacf(a,b,x){
+  var MAXIT=300,EPS=3e-16,FPMIN=1e-300,qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap,m,m2,aa,del;
+  if(Math.abs(d)<FPMIN)d=FPMIN;d=1/d;var h=d;
+  for(m=1;m<=MAXIT;m++){
+    m2=2*m;aa=m*(b-m)*x/((qam+m2)*(a+m2));
+    d=1+aa*d;if(Math.abs(d)<FPMIN)d=FPMIN;
+    c=1+aa/c;if(Math.abs(c)<FPMIN)c=FPMIN;
+    d=1/d;h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+    d=1+aa*d;if(Math.abs(d)<FPMIN)d=FPMIN;
+    c=1+aa/c;if(Math.abs(c)<FPMIN)c=FPMIN;
+    d=1/d;del=d*c;h*=del;
+    if(Math.abs(del-1)<EPS)break;
+  }
+  return h;
+}
+function betai(a,b,x){
+  if(x<=0)return 0;if(x>=1)return 1;
+  var bt=Math.exp(logGamma(a+b)-logGamma(a)-logGamma(b)+a*Math.log(x)+b*Math.log(1-x));
+  return x<(a+1)/(a+b+2)?bt*betacf(a,b,x)/a:1-bt*betacf(b,a,1-x)/b;
 }
 // Exact bar and effect figures for proportions. The post points are patient counts
-// (k_j = x_j*n), so with a flat prior the true end rate is Beta(K+1, N-K+1) and the
-// beta-binomial identity gives its CDF exactly: P(p1 <= x) = 1 - P(Binom(N+1, x) <= K).
-// The bar is anchored on the measured baseline level: the claim judged is that the true
-// end rate is at least one bar better than the baseline level you measured.
+// (k_j = x_j*n, kept fractional when the entered proportion is not a multiple of 1/n),
+// so with a flat prior the true end rate is Beta(1+K, 1+N-K) and its CDF is the
+// regularised incomplete beta. The bar is anchored on the measured baseline level: the
+// claim judged is that the true end rate is at least one bar better than the baseline
+// level you measured. A useful property: the best guess of the true end rate is exactly
+// the end level you entered.
 function propPost(o,mid){
-  var K=0,N=o.fArr.length*o.n,i;
-  for(i=0;i<o.fArr.length;i++)K+=Math.round(o.fArr[i]*o.n);
-  var t=o.up?o.p0+mid:o.p0-mid,pAbove;
-  if(t<=0)pAbove=o.up?1:0;else if(t>=1)pAbove=o.up?0:1;
-  else if(o.up)pAbove=binomLE(K,N+1,t);
-  else pAbove=1-binomLE(K,N+1,t);
-  function cdf(x){return x<=0?0:x>=1?1:1-binomLE(K,N+1,x)}
-  function q(p){var lo=0,hi=1,j;for(j=0;j<60;j++){var m=(lo+hi)/2;if(cdf(m)<p)lo=m;else hi=m}return (lo+hi)/2}
-  var q10=q(0.1),q50=q(0.5),q90=q(0.9);
-  if(o.up)return {pAbove:pAbove,d10:q10-o.p0,d50:q50-o.p0,d90:q90-o.p0};
+  var K=0,N=0,i;
+  for(i=0;i<o.fArr.length;i++){K+=o.fArr[i]*o.n;N+=o.n}
+  var a=1+K,b=1+N-K;
+  function cdf(x){return betai(a,b,x)}
+  function q(p){var lo=0,hi=1,j;for(j=0;j<80;j++){var m=(lo+hi)/2;if(cdf(m)<p)lo=m;else hi=m}return (lo+hi)/2}
+  var q10=q(0.1),q50=q(0.5),q90=q(0.9),t,pAbove;
+  if(o.up){
+    t=o.p0+mid;pAbove=t<=0?1:t>=1?0:1-cdf(t);
+    return {pAbove:pAbove,d10:q10-o.p0,d50:q50-o.p0,d90:q90-o.p0};
+  }
+  t=o.p0-mid;pAbove=t<=0?0:t>=1?1:cdf(t);
   return {pAbove:pAbove,d10:o.p0-q90,d50:o.p0-q50,d90:o.p0-q10};
 }
 function buildGrid(mid,tObs){
@@ -435,7 +461,7 @@ function steady(a,n,P){
   add('Enough patients per point (5 or more)',n>=5?'pass':'fail',true);
   return {res:res,ok:ok};
 }
-if(typeof module!=='undefined')module.exports={invPhi,randn,medNormal,med,chartMed,contPoint,binom,varFac,theil,autoSpread,shiftOf,logSumExp,tailLog,baseDraws,drawFinal,shiftsFrom,buildGrid,binomLE,propPost,makeAssess,steady,quantile};
+if(typeof module!=='undefined')module.exports={invPhi,randn,medNormal,med,chartMed,contPoint,binom,varFac,theil,autoSpread,shiftOf,logSumExp,tailLog,baseDraws,drawFinal,shiftsFrom,buildGrid,logGamma,betacf,betai,propPost,makeAssess,steady,quantile};
 // ================= END ENGINE =================
 
 if(typeof document!=='undefined'){
