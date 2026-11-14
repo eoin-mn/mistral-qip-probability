@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 5 -->
+<!-- EmergApps end-of-project assessment — version 6 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V5</title>
+<title>Mistral calc V6</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -266,7 +266,7 @@
         </details>
         <details>
           <summary>Assumptions behind the estimate</summary>
-          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated bar, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all points since the first change pooled together, or your final cycle's points only, depending on which you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
+          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and a generous ceiling (five times your stated bar, or half as much again as the shift observed, whichever is larger). The evidence summarised is how often luck alone would produce a chart at least as good as yours, and how often each possible true improvement would. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point; for proportion data the bar and effect figures are instead computed exactly from your points, given the binomial model. The variation setting is an assumption unless it was estimated from your baseline data. The headline compares your baseline with either all points since the first change pooled together, or your final cycle's points only, depending on which you chose in step 3; the size of the improvement is estimated by asking which true effects would make a chart like yours a typical, rather than lucky, outcome. With more than one cycle, the table shows what each stage added.</p>
         </details>
       </div>
     </div>
@@ -328,6 +328,32 @@ function drawFinal(o,delta,R){
   return a;
 }
 function shiftsFrom(o,bd,fd){var s=new Array(bd.length),i;for(i=0;i<bd.length;i++)s[i]=shiftOf(o.cont,o.up,bd[i],fd[i]);return s}
+// Exact binomial CDF: P(X <= k) for X ~ Binom(m, t)
+function binomLE(k,m,t){
+  if(k<0)return 0;if(k>=m)return 1;if(t<=0)return 1;if(t>=1)return 0;
+  var lf=new Array(m+1),i,s=0;lf[0]=0;
+  for(i=1;i<=m;i++)lf[i]=lf[i-1]+Math.log(i);
+  for(i=0;i<=k;i++)s+=Math.exp(lf[m]-lf[i]-lf[m-i]+i*Math.log(t)+(m-i)*Math.log(1-t));
+  return Math.min(1,s);
+}
+// Exact bar and effect figures for proportions. The post points are patient counts
+// (k_j = x_j*n), so with a flat prior the true end rate is Beta(K+1, N-K+1) and the
+// beta-binomial identity gives its CDF exactly: P(p1 <= x) = 1 - P(Binom(N+1, x) <= K).
+// The bar is anchored on the measured baseline level: the claim judged is that the true
+// end rate is at least one bar better than the baseline level you measured.
+function propPost(o,mid){
+  var K=0,N=o.fArr.length*o.n,i;
+  for(i=0;i<o.fArr.length;i++)K+=Math.round(o.fArr[i]*o.n);
+  var t=o.up?o.p0+mid:o.p0-mid,pAbove;
+  if(t<=0)pAbove=o.up?1:0;else if(t>=1)pAbove=o.up?0:1;
+  else if(o.up)pAbove=binomLE(K,N+1,t);
+  else pAbove=1-binomLE(K,N+1,t);
+  function cdf(x){return x<=0?0:x>=1?1:1-binomLE(K,N+1,x)}
+  function q(p){var lo=0,hi=1,j;for(j=0;j<60;j++){var m=(lo+hi)/2;if(cdf(m)<p)lo=m;else hi=m}return (lo+hi)/2}
+  var q10=q(0.1),q50=q(0.5),q90=q(0.9);
+  if(o.up)return {pAbove:pAbove,d10:q10-o.p0,d50:q50-o.p0,d90:q90-o.p0};
+  return {pAbove:pAbove,d10:o.p0-q90,d50:o.p0-q50,d90:o.p0-q10};
+}
 function buildGrid(mid,tObs){
   var dmax=Math.max(5*mid,1.5*Math.abs(tObs),mid*1.0001),lo0=mid/10,N=40,grid=[],prev=lo0,i,hi;
   for(i=1;i<=N;i++){
@@ -351,7 +377,7 @@ function makeAssess(o,tObs,mid,R){
         var c=grid[idx++],tl=tailLog(shiftsFrom(o,bd,drawFinal(o,c.d,R)),tObs);
         tails.push(tl);parts.push(tl+Math.log(c.w));batch--;
       }else if(tailMid===null){
-        tailMid=tailLog(shiftsFrom(o,bd,drawFinal(o,mid,R)),tObs);batch--;
+        tailMid=(o.cont||!o.fArr)?tailLog(shiftsFrom(o,bd,drawFinal(o,mid,R)),tObs):0;batch--;
       }else return true;
     }
     return false;
@@ -360,25 +386,31 @@ function makeAssess(o,tObs,mid,R){
     var logdmax=Math.log(grid.dmax);
     var logm1=logSumExp(parts)-logdmax;
     var pImp=1/(1+Math.exp(-(logm1-logm0)));
-    var pts=[[0,Math.exp(logm0)]],run=-1,i;
-    for(i=0;i<grid.length;i++)pts.push([grid[i].d,tails[i]===-Infinity?0:Math.exp(tails[i])]);
-    pts.push([mid,tailMid===-Infinity?0:Math.exp(tailMid)]);
-    pts.sort(function(a,b){return a[0]-b[0]});
-    for(i=0;i<pts.length;i++){if(pts[i][1]>run)run=pts[i][1];else pts[i][1]=run}
-    function deltaAt(p){
-      for(var j=1;j<pts.length;j++){
-        if(pts[j][1]>=p){
-          var a=pts[j-1],b=pts[j],span=b[1]-a[1];
-          return span>0?a[0]+(b[0]-a[0])*(p-a[1])/span:b[0];
+    var pMid,delta,loDelta,hiDelta;
+    if(!o.cont&&o.fArr){
+      var pp=propPost(o,mid);
+      pMid=pImp*pp.pAbove;delta=pp.d50;loDelta=pp.d10;hiDelta=pp.d90;
+    }else{
+      var pts=[[0,Math.exp(logm0)]],run=-1,i;
+      for(i=0;i<grid.length;i++)pts.push([grid[i].d,tails[i]===-Infinity?0:Math.exp(tails[i])]);
+      pts.push([mid,tailMid===-Infinity?0:Math.exp(tailMid)]);
+      pts.sort(function(a,b){return a[0]-b[0]});
+      for(i=0;i<pts.length;i++){if(pts[i][1]>run)run=pts[i][1];else pts[i][1]=run}
+      function deltaAt(p){
+        for(var j=1;j<pts.length;j++){
+          if(pts[j][1]>=p){
+            var a=pts[j-1],b=pts[j],span=b[1]-a[1];
+            return span>0?a[0]+(b[0]-a[0])*(p-a[1])/span:b[0];
+          }
         }
+        return pts[pts.length-1][0];
       }
-      return pts[pts.length-1][0];
+      var pAbove=1-Math.exp(tailMid);
+      if(pAbove<0)pAbove=0;if(pAbove>1)pAbove=1;
+      pMid=pImp*pAbove;delta=deltaAt(0.5);loDelta=deltaAt(0.1);hiDelta=deltaAt(0.9);
     }
-    var pAbove=1-Math.exp(tailMid);
-    if(pAbove<0)pAbove=0;if(pAbove>1)pAbove=1;
-    var pMid=pImp*pAbove;
     var fs=fd0.slice().sort(function(a,b){return a-b});
-    return {pImp:pImp,pMid:pMid,delta:deltaAt(0.5),loDelta:deltaAt(0.1),hiDelta:deltaAt(0.9),logm0:logm0,
+    return {pImp:pImp,pMid:pMid,delta:delta,loDelta:loDelta,hiDelta:hiDelta,logm0:logm0,
       env:[quantile(fs,0.025),quantile(fs,0.975)],dmax:grid.dmax};
   }
   return {step:step,result:result,total:grid.length+1};
@@ -403,7 +435,7 @@ function steady(a,n,P){
   add('Enough patients per point (5 or more)',n>=5?'pass':'fail',true);
   return {res:res,ok:ok};
 }
-if(typeof module!=='undefined')module.exports={invPhi,randn,medNormal,med,chartMed,contPoint,binom,varFac,theil,autoSpread,shiftOf,logSumExp,tailLog,baseDraws,drawFinal,shiftsFrom,buildGrid,makeAssess,steady,quantile};
+if(typeof module!=='undefined')module.exports={invPhi,randn,medNormal,med,chartMed,contPoint,binom,varFac,theil,autoSpread,shiftOf,logSumExp,tailLog,baseDraws,drawFinal,shiftsFrom,buildGrid,binomLE,propPost,makeAssess,steady,quantile};
 // ================= END ENGINE =================
 
 if(typeof document!=='undefined'){
@@ -584,7 +616,7 @@ if(typeof document!=='undefined'){
     var base=a.med,post=e.med,tObs=shiftOf(cont,o.up,base,post);
     var p0=cont?1:Math.min(0.995,Math.max(0.005,base));
     var flipped=tObs<=0;
-    var model={cont:cont,up:flipped?!o.up:o.up,sig:o.sig||0,p0:p0,B:a.k,P:e.k,n:o.n};
+    var model={cont:cont,up:flipped?!o.up:o.up,sig:o.sig||0,p0:p0,B:a.k,P:e.k,n:o.n,fArr:e.arr};
     clearBoxes();
     var A=makeAssess(model,flipped?-tObs:tObs,o.mid,2500);
     function tick(){
@@ -678,7 +710,7 @@ if(typeof document!=='undefined'){
       }
       var r=rows[ri++],A=o.ph[r.a],B=o.ph[r.b];
       var t=shiftOf(o.cont,o.up,A.med,B.med);
-      var model={cont:o.cont,up:o.up,sig:o.sig||0,p0:o.cont?1:Math.min(0.995,Math.max(0.005,A.med)),B:A.k,P:B.k,n:o.n};
+      var model={cont:o.cont,up:o.up,sig:o.sig||0,p0:o.cont?1:Math.min(0.995,Math.max(0.005,A.med)),B:A.k,P:B.k,n:o.n,fArr:B.arr};
       var As=makeAssess(model,t,o.mid,800);
       while(!As.step(10));
       var res=As.result();
