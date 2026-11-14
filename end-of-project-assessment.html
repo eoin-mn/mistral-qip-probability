@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- EmergApps end-of-project assessment — version 8 -->
+<!-- EmergApps end-of-project assessment — version 9 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mistral calc V8</title>
+<title>Mistral calc V9</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -51,6 +51,15 @@
 
   .verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 760px) { .verdicts { grid-template-columns: 1fr; } }
+  .verdicts .span2 { grid-column: 1 / -1; }
+  table.sum { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 10px; }
+  table.sum th { text-align: left; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8a8172; padding: 6px 8px; border-bottom: 2px solid #e9e1d2; }
+  table.sum td { padding: 8px; border-bottom: 1px solid #efe8da; vertical-align: top; color: #3d382e; }
+  table.sum tr:last-child td { border-bottom: 0; }
+  table.sum td.num { white-space: nowrap; }
+  table.sum .sub { font-size: .78rem; color: #8a8172; }
+  table.sum tr.endrow td { background: #fff8e8; }
+  table.sum .endtag { font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #c2410c; }
   .verdict { text-align: center; padding: 24px 16px 22px; }
   .verdict .q { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #a39a89; line-height: 1.5; }
   .verdict .big { font-size: 2.9rem; font-weight: 800; line-height: 1.1; margin: 10px 0 4px; }
@@ -226,6 +235,10 @@
           <div class="pbar"><i id="barFill"></i></div>
           <div class="odds2" id="barSub"></div>
           <span class="pill" id="barPill">…</span>
+        </div>
+        <div class="card verdict span2" id="sumCard" style="display:none">
+          <div class="q">Your data at a glance</div>
+          <div id="sumBody" style="text-align:left"></div>
         </div>
       </div>
 
@@ -623,13 +636,42 @@ if(typeof document!=='undefined'){
   }
   function setBarCard(band,pill,big,word,sub){
     $('barCard').className='card verdict'+(band?' '+band:'');
-    $('barPill').className='pill'+(band?' '+band:'');$('barPill').textContent=pill;
+    $('barPill').className='pill'+(band?' '+band:'');$('barPill').textContent=pill;$('barPill').style.display=pill?'inline-block':'none';
     $('barPct').textContent=big;$('barWord').textContent=word;
     $('barSub').innerHTML=sub||'';
     var pc=/%$/.test(big)?parseFloat(big):0;
     $('barFill').style.width=(isFinite(pc)?pc:0)+'%';
   }
-  function clearBoxes(){$('boxNow').innerHTML='';$('boxEffect').innerHTML='';$('boxCycles').innerHTML='';$('boxQuality').innerHTML=''}
+  function clearBoxes(){$('boxNow').innerHTML='';$('boxEffect').innerHTML='';$('boxCycles').innerHTML='';$('boxQuality').innerHTML='';$('sumCard').style.display='none'}
+
+  function renderSummary(o){
+    var cont=o.cont,unit=cont?'':'%',scale=cont?1:100,d=cont?1:0,rows='',i;
+    for(i=0;i<=o.C;i++){
+      var p=o.ph[i];
+      if(p.med===null)continue;
+      var varTxt;
+      if(p.arr&&p.arr.length>=2){
+        var s=p.arr.slice().sort(function(x,y){return x-y});
+        if(s.length>=4){
+          varTxt='middle half of points between <strong>'+fmt(quantile(s,0.25)*scale,d)+unit+'</strong> and <strong>'+fmt(quantile(s,0.75)*scale,d)+unit+'</strong>';
+        }else{
+          varTxt='points ranged from <strong>'+fmt(s[0]*scale,d)+unit+'</strong> to <strong>'+fmt(s[s.length-1]*scale,d)+unit+'</strong>';
+        }
+      }else{
+        var p0=Math.min(0.995,Math.max(0.005,p.med));
+        var ptSd=cont?o.sig*Math.sqrt(varFac(o.n)):Math.sqrt(p0*(1-p0)/o.n);
+        var loP=cont?p.med*Math.exp(-2*ptSd):Math.max(0,p0-2*ptSd);
+        var hiP=cont?p.med*Math.exp(2*ptSd):Math.min(1,p0+2*ptSd);
+        varTxt='by luck alone, a typical point could land between <strong>'+fmt(loP*scale,d)+unit+'</strong> and <strong>'+fmt(hiP*scale,d)+unit+'</strong>';
+      }
+      rows+='<tr'+(i===o.C?' class="endrow"':'')+'><td>'+p.name+(i===o.C?' <span class="endtag">end level</span>':'')+
+        '<br><span class="sub">'+p.k+' point'+(p.k===1?'':'s')+' &times; '+o.n+' patient'+(o.n===1?'':'s')+' each</span></td>'+
+        '<td class="num"><strong>'+fmt(p.med*scale,d)+unit+'</strong><br><span class="sub">median</span></td>'+
+        '<td>'+varTxt+'</td></tr>';
+    }
+    $('sumCard').style.display='';
+    $('sumBody').innerHTML='<table class="sum"><thead><tr><th>Phase</th><th>Median</th><th>Variation</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
 
   function pctTxt(p){var pc=Math.round(p*100);return (pc>=99?'99+':pc)+'%'}
 
@@ -661,6 +703,7 @@ if(typeof document!=='undefined'){
   }
 
   function renderMain(o,r,tObs,base,post,e,flipped){
+    renderSummary(o);
     var cont=o.cont,pc=Math.round(r.pImp*100),pm=r.pMid===null?null:Math.round(r.pMid*100);
     var a=o.ph[0],B=a.k,P=e.k;
     var st=steady(a.arr,n,P),cn=[];
@@ -680,8 +723,8 @@ if(typeof document!=='undefined'){
     var barBand,barBig,barWord,barPill;
     if(flipped){barBand='red';barBig='–';barWord='No improvement to judge against your target';barPill='NOT APPLICABLE';}
     else if(pm>=50){barBand='green';barBig=pctTxt(r.pMid);barWord='More likely than not your target was reached';barPill='TARGET REACHED';}
-    else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could reach your target, but more likely not';barPill='TARGET NOT REACHED';}
-    else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your target';barPill='TARGET NOT REACHED';}
+    else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could reach your target, but more likely not';barPill='';}
+    else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your target';barPill='';}
     var barSub='Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.';
     if(!flipped){
       var estTxt=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' percentage points';
