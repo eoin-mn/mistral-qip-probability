@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Did Your Project Work? — End-of-Project Assessment</title>
+<style>
+  :root {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: #1d1c19;
+    background: #faf6ee;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  header.site { text-align: center; padding: 28px 12px 8px; }
+  header.site h1 { font-size: 1.9rem; font-weight: 800; color: #16150f; letter-spacing: -0.01em; }
+  header.site p.sub { color: #6f675a; margin-top: 8px; font-size: 1rem; }
+  .accent { color: #fa500f; }
+  .cols { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 24px; }
+  @media (min-width: 900px) { .cols { grid-template-columns: 5fr 7fr; } }
+
+  .card { background: #fff; border: 1px solid #e9e1d2; border-radius: 14px; padding: 22px; box-shadow: 0 1px 3px rgba(60,40,10,0.05); }
+  .step { margin-bottom: 26px; }
+  .step:last-of-type { margin-bottom: 0; }
+  .step-head { display: flex; align-items: baseline; gap: 10px; }
+  .step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; background: #16150f; color: #fff; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .step-head h2 { font-size: 1rem; font-weight: 700; color: #16150f; }
+  .hint { font-size: 0.82rem; color: #6f675a; margin-top: 6px; line-height: 1.45; }
+  .hint strong { color: #3d382e; }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .btn {
+    padding: 9px 16px; border-radius: 10px; border: 1px solid #d9cfbc;
+    background: #fff; font-size: 0.9rem; font-weight: 600; color: #3d382e; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .btn:hover { background: #f7f1e6; }
+  .btn.active { background: #16150f; border-color: #16150f; color: #fff; }
+  select, input[type=number] {
+    width: 100%; margin-top: 8px; padding: 9px 12px; border: 1px solid #d9cfbc; border-radius: 10px;
+    font-size: 0.9rem; background: #fff; color: #1d1c19;
+  }
+  select:focus, input:focus, textarea:focus { outline: 2px solid #fa500f; outline-offset: 1px; border-color: #fa500f; }
+  label.lbl { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #8a8172; }
+  textarea {
+    width: 100%; margin-top: 8px; padding: 9px 12px; border: 1px solid #d9cfbc; border-radius: 10px;
+    font-size: 0.9rem; font-family: inherit; resize: vertical; background: #fffdf9;
+  }
+
+  .verdict { text-align: center; padding: 30px 22px 26px; }
+  .verdict .q { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #a39a89; }
+  .verdict .big { font-size: 3.4rem; font-weight: 800; line-height: 1.1; margin: 10px 0 4px; }
+  .verdict .big-word { font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; }
+  .verdict .odds { font-size: 1.05rem; color: #3d382e; }
+  .verdict .odds2 { font-size: 0.95rem; color: #6f675a; margin-top: 6px; }
+  .pbar { height: 10px; border-radius: 999px; background: #f0e9db; overflow: hidden; margin: 16px auto 4px; max-width: 340px; }
+  .pbar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #fa500f, #ffc20e); transition: width .5s ease; }
+  .pill { display: inline-block; padding: 5px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: .03em; margin-top: 14px; }
+  .verdict.green { background: #f2fbf4; border-color: #b5e5c3; } .verdict.green .big, .verdict.green .big-word { color: #15803d; } .pill.green { background: #dcf5e3; color: #166534; }
+  .verdict.amber { background: #fff8e8; border-color: #f3d48a; } .verdict.amber .big { color: #d97a06; } .verdict.amber .big-word { color: #b45309; } .pill.amber { background: #fdeec7; color: #92400e; }
+  .verdict.red { background: #fdf0ed; border-color: #f3b7a8; } .verdict.red .big, .verdict.red .big-word { color: #b3301c; } .pill.red { background: #fadcd3; color: #991b1b; }
+
+  .advice { margin-top: 20px; display: grid; gap: 12px; }
+  .advice-box { padding: 14px 16px; border-radius: 12px; font-size: 0.92rem; line-height: 1.5; }
+  .advice-box:empty { display: none; }
+  .advice-box strong { display: block; margin-bottom: 2px; }
+  .advice-box.now { background: #fff3e9; border: 1px solid #f8cdb0; color: #8a3a10; }
+  .advice-box.now strong { color: #c2410c; }
+  .advice-box.effect { background: #fff; border: 1px solid #e9e1d2; color: #3d382e; }
+  .advice-box.effect b.bar-hit { color: #15803d; } .advice-box.effect b.bar-miss { color: #b45309; }
+  .advice-box.quality { background: #f7f4ec; border: 1px solid #e5ddcb; color: #4a4438; }
+  .advice-box.quality ul { list-style: none; padding: 0; margin-top: 6px; }
+  .advice-box.quality li { margin-bottom: 3px; font-size: .86rem; }
+  .advice-box b.ok { color: #15803d; } .advice-box b.warn { color: #b45309; } .advice-box b.bad { color: #b91c1c; }
+  .advice-box.warnbox { background: #fff8e8; border: 1px solid #f3d48a; color: #92400e; }
+
+  .advice-box.cycles { background: #fff; border: 1px solid #e9e1d2; color: #3d382e; }
+  .advice-box.cycles p { font-size: .84rem; color: #6f675a; margin-top: 2px; }
+  .tbl-scroll { overflow-x: auto; margin-top: 10px; }
+  table.cyc { width: 100%; border-collapse: collapse; font-size: .86rem; min-width: 460px; }
+  table.cyc th { text-align: left; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8a8172; padding: 6px 8px; border-bottom: 2px solid #e9e1d2; }
+  table.cyc td { padding: 8px; border-bottom: 1px solid #efe8da; vertical-align: top; }
+  table.cyc tr.vsprev td:first-child { padding-left: 22px; color: #5c5548; }
+  table.cyc tr.headline td { background: #faf6ee; }
+
+  .chartcard { margin-top: 20px; }
+  .chartcard h3 { font-size: .95rem; font-weight: 700; color: #16150f; }
+  .chartcard p.cap { font-size: .8rem; color: #6f675a; margin-top: 4px; line-height: 1.45; }
+  canvas#chart { width: 100%; height: 280px; margin-top: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: .78rem; color: #6f675a; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .swatch { width: 14px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .explain { margin-top: 24px; }
+  .explain details { border-top: 1px solid #e9e1d2; padding: 12px 4px; }
+  .explain summary { font-weight: 600; font-size: 0.9rem; cursor: pointer; color: #3d382e; }
+  .explain p { font-size: 0.88rem; color: #55503f; margin-top: 8px; line-height: 1.55; }
+
+  footer { text-align: center; color: #a39a89; font-size: 0.75rem; padding: 24px 12px 0; }
+  .hide { display: none; }
+  .calcwrap { position: sticky; bottom: 0; background: linear-gradient(to bottom, rgba(250,246,238,0), #faf6ee 28%); padding: 22px 0 4px; margin-top: 8px; }
+  button.calc { width: 100%; padding: 17px 20px; font-size: 1.2rem; font-weight: 800; letter-spacing: .02em; color: #fff; background: linear-gradient(90deg, #fa500f, #ff8205); border: 0; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(250,80,15,.35); }
+  button.calc:hover { filter: brightness(1.05); }
+  button.calc:focus-visible { outline: 3px solid #ffc20e; outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+      <img src="images/EmergApps logo.png" style="width: 100px; padding-bottom: 20px; max-width: 20%;" alt="EmergApps">
+    <h1>The end of your project:<br><br>did it <span class="accent">actually</span> work?</h1>
+    <p class="sub">An end-of-project assessment for QI teams. Not pass or fail, not a p-value — a graded, honest probability, judged against the smallest improvement you would have accepted at the start.</p>
+  </header>
+
+  <div class="cols">
+
+    <!-- INPUTS -->
+    <div class="card">
+
+      <div class="step">
+        <div class="step-head"><span class="step-num">1</span><h2>What did you measure?</h2></div>
+        <div class="btn-row">
+          <button class="btn" id="btnCont" onclick="setType('continuous')">Continuous data (e.g. time, volume)</button>
+          <button class="btn" id="btnProp" onclick="setType('proportion')">Proportion (e.g. % meeting a standard)</button>
+        </div>
+        <label class="lbl" for="dir" style="margin-top:14px">Which direction is better?</label>
+        <select id="dir" onchange="updateAll()">
+          <option value="" selected disabled>Choose…</option>
+          <option value="down">Lower is better</option>
+          <option value="up">Higher is better</option>
+        </select>
+      </div>
+
+      <div class="step">
+        <div class="step-head"><span class="step-num">2</span><h2>Patients behind each data point on your chart</h2></div>
+        <div class="btn-row" id="nRow"></div>
+        <p class="hint" id="hintN"></p>
+      </div>
+
+      <div class="step">
+        <div class="step-head"><span class="step-num">3</span><h2>Your data, in time order</h2></div>
+        <label class="lbl" style="margin-top:4px">Number of PDSA cycles</label>
+        <div class="btn-row">
+          <button class="btn active" id="btnCyc1" onclick="setCycles(1)">1 cycle</button>
+          <button class="btn" id="btnCyc2" onclick="setCycles(2)">2 cycles</button>
+          <button class="btn" id="btnCyc3" onclick="setCycles(3)">3 cycles</button>
+        </div>
+        <p class="hint">Each cycle is a separate change tested in turn. Points are counted from when that cycle's change went in until the next cycle started.</p>
+        <div id="rawRows">
+          <div class="med-row" id="rowRBase" style="margin-top:14px">
+            <label class="lbl" for="rawBase" id="lblBase">Baseline values (comma or space separated, in time order)</label>
+            <textarea id="rawBase" rows="2" oninput="processRaw()" placeholder="e.g. 82, 85, 79, 81, 88, 76"></textarea>
+            <p class="hint">Baseline data points entered: <strong id="countBase">0</strong></p>
+          </div>
+          <div class="med-row" id="rowR1">
+            <label class="lbl" for="raw1" id="lbl1">Values after PDSA 1 (comma or space separated, in time order)</label>
+            <textarea id="raw1" rows="2" oninput="processRaw()" placeholder=""></textarea>
+            <p class="hint">PDSA 1 data points entered: <strong id="count1">0</strong></p>
+          </div>
+          <div class="med-row hide" id="rowR2">
+            <label class="lbl" for="raw2" id="lbl2">Values after PDSA 2 (comma or space separated, in time order)</label>
+            <textarea id="raw2" rows="2" oninput="processRaw()" placeholder=""></textarea>
+            <p class="hint">PDSA 2 data points entered: <strong id="count2">0</strong></p>
+          </div>
+          <div class="med-row hide" id="rowR3">
+            <label class="lbl" for="raw3" id="lbl3">Values after PDSA 3 (comma or space separated, in time order)</label>
+            <textarea id="raw3" rows="2" oninput="processRaw()" placeholder=""></textarea>
+            <p class="hint">PDSA 3 data points entered: <strong id="count3">0</strong></p>
+          </div>
+        </div>
+        <p class="hint" id="hintShift"></p>
+      </div>
+
+      <div class="step" id="noiseStep">
+        <div class="step-head"><span class="step-num">4</span><h2>How much variation is in the data?</h2></div>
+        <select id="noisePreset" onchange="updateAll()">
+          <option value="auto" selected>Estimate from my baseline data (recommended, needs 3+ baseline points)</option>
+          <option value="0.195">Tightly controlled process</option>
+          <option value="0.514">Typical process for a busy Emergency Department or ward</option>
+          <option value="0.93">Chaotic process, e.g. a low priority issue in an ED or ward</option>
+        </select>
+        <p class="hint" id="hintNoise"></p>
+      </div>
+
+      <div class="step">
+        <div class="step-head"><span class="step-num">5</span><h2>The smallest improvement that would matter</h2></div>
+        <p class="hint" style="margin-top:8px">Decide this <strong>before</strong> looking at the result: how big a gain would justify keeping the change and calling the project a success? The assessment below is judged against this bar, not against whatever shift happened to appear.</p>
+        <label class="lbl" for="mid" id="lblMid" style="margin-top:10px">Smallest improvement that matters (%)</label>
+        <input type="number" id="mid" min="0.5" step="0.5" placeholder="e.g. 15" oninput="updateAll()">
+        <p class="hint" id="hintMid"></p>
+      </div>
+
+      <div class="calcwrap">
+        <button class="calc" id="btnCalc" type="button" onclick="calculate()">Assess my project</button>
+        <p class="hint" id="calcHint" style="text-align:center"></p>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div>
+      <div class="card verdict" id="verdictCard">
+        <div class="q" id="verdictQ">Chance your project genuinely improved the process:</div>
+        <div class="big" id="bigPct">–</div>
+        <div class="big-word" id="bigWord">–</div>
+        <div class="pbar"><i id="pbarFill"></i></div>
+        <div class="odds" id="oddsLine">–</div>
+        <div class="odds2" id="oddsLine2"></div>
+        <span class="pill" id="pill">…</span>
+      </div>
+
+      <div class="advice">
+        <div class="advice-box now" id="boxNow"></div>
+        <div class="advice-box effect" id="boxEffect"></div>
+        <div class="advice-box cycles" id="boxCycles"></div>
+        <div class="advice-box quality" id="boxQuality"></div>
+      </div>
+
+      <div class="card chartcard" id="chartCard">
+        <h3>Your chart, with the room luck has left itself</h3>
+        <p class="cap" id="chartCap">Enter your data and press "Assess my project" to see your run chart with the luck envelope.</p>
+        <canvas id="chart" width="600" height="280"></canvas>
+        <div class="legend">
+          <span><span class="dot" style="background:#a49b8c"></span> baseline points</span>
+          <span><span class="dot" style="background:#fa500f"></span> points after change</span>
+          <span><span class="swatch" style="background:rgba(250,80,15,.15)"></span> where the end median would wander by luck alone</span>
+        </div>
+      </div>
+
+      <div class="card explain">
+        <details>
+          <summary>What does "chance your project worked" actually mean?</summary>
+          <p>It is the probability that your change genuinely moved the process, given how your chart looks, starting from a neutral 50:50 chance that it works. The starting chance is fixed on purpose, so it cannot be talked up. It combines how often a chart this good appears by luck when nothing has changed with how often a genuine change would produce one. It is a probability, not a verdict, and it rests on the assumptions below.</p>
+        </details>
+        <details>
+          <summary>Why judge it against a "smallest improvement that matters"?</summary>
+          <p>Declaring success on any shift at all rewards flukes: tiny, worthless improvements can look impressive in small samples. Deciding the bar in advance — the gain that would actually justify keeping the change — and then asking "did we clear it?" keeps you honest. The tool gives two graded answers: the chance that anything real happened at all, and the chance that what happened reaches your bar. A project can be genuinely improved and still fall short of the bar; that is a real finding, not a failure of the maths.</p>
+        </details>
+        <details>
+          <summary>How is this different from a run chart or the earlier calculator?</summary>
+          <p>Run chart rules need long, well-behaved series and fire on noise in short, busy-department data. The earlier calculator assumed the true improvement was exactly the one you observed, which flatters small samples. This tool instead allows the true improvement to be anywhere from nothing up to a generous ceiling, lets your data say where it probably sits, and is deliberately cautious: with little data it refuses to hand out high confidence, whichever way the result would flatter you.</p>
+        </details>
+        <details>
+          <summary>What this tool cannot see</summary>
+          <p>Surges, staff sickness, case-mix shifts, season and other things that changed at the same time as your change are invisible to it. If any of them lined up with your intervention, part of the shift may belong to them rather than to you. It also assumes consecutive points are independent; in a real department, nearby points often drift together, which makes the percentage flattering. Treat the result as one piece of evidence, alongside everything else you know about the project.</p>
+        </details>
+        <details>
+          <summary>Assumptions behind the estimate</summary>
+          <p>Each data point is the median of the same number of patients, drawn from a lognormal distribution (times) or a binomial (proportions), with the same spread in every phase. The baseline is steady, with no trend, and the change took effect immediately and stayed. Two possibilities are compared, each starting at 50:50: no change, or a genuine improvement whose true size is assumed, before looking at your end data, to be equally likely anywhere between just above zero and five times your stated bar. Your chart's medians are simulated thousands of times under each possibility, so figures can wobble by about a percentage point. The variation setting is an assumption unless it was estimated from your baseline data. The assessment compares your final cycle with your baseline; with more than one cycle, the table shows what each stage added.</p>
+        </details>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>For QI teams: the honest question at the end of a project is not "did the chart move?" but "did it move more than luck, and more than the least we would accept?"<br>Built by Claude.ai on an original design by Mistral.ai</footer>
+</div>
+
+<script>
+// ================= ENGINE (pure functions, no DOM) =================
+var KA=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00],
+KB=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01],
+KC=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00],
+KD=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+function invPhi(p){
+  var q,r;
+  if(p<0.02425){q=Math.sqrt(-2*Math.log(p));return (((((KC[0]*q+KC[1])*q+KC[2])*q+KC[3])*q+KC[4])*q+KC[5])/((((KD[0]*q+KD[1])*q+KD[2])*q+KD[3])*q+1)}
+  if(p>1-0.02425){q=Math.sqrt(-2*Math.log(1-p));return -(((((KC[0]*q+KC[1])*q+KC[2])*q+KC[3])*q+KC[4])*q+KC[5])/((((KD[0]*q+KD[1])*q+KD[2])*q+KD[3])*q+1)}
+  q=p-0.5;r=q*q;
+  return (((((KA[0]*r+KA[1])*r+KA[2])*r+KA[3])*r+KA[4])*r+KA[5])*q/(((((KB[0]*r+KB[1])*r+KB[2])*r+KB[3])*r+KB[4])*r+1);
+}
+function randn(){var u=0,v=0;while(!u)u=Math.random();v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function gam(a){if(a<1)return gam(a+1)*Math.pow(Math.random(),1/a);var d=a-1/3,c=1/Math.sqrt(9*d);for(;;){var x,v;do{x=randn();v=1+c*x}while(v<=0);v=v*v*v;var u=Math.random();if(Math.log(u)<0.5*x*x+d-d*v+d*Math.log(v))return d*v}}
+function betaD(a,b){var x=gam(a),y=gam(b);return x/(x+y)}
+function clampU(u){return Math.min(1-1e-12,Math.max(1e-12,u))}
+function medNormal(n){
+  if(n===1)return randn();
+  if(n%2===1){var k=(n+1)/2;return invPhi(clampU(betaD(k,k)))}
+  var h=n/2,u=clampU(betaD(h,n-h+1)),w=clampU(u+(1-u)*(1-Math.pow(Math.random(),1/(n-h))));
+  return (invPhi(u)+invPhi(w))/2;
+}
+function med(a){var s=a.slice().sort(function(x,y){return x-y}),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function chartMed(k,gen){var a=new Array(k);for(var i=0;i<k;i++)a[i]=gen();return med(a)}
+function contPoint(m,sig,n){return m*Math.exp(sig*medNormal(n))}
+function binom(n,p){
+  var v=n*p*(1-p);
+  if(v>=25){var x=Math.round(n*p+Math.sqrt(v)*randn());return Math.min(n,Math.max(0,x))/n}
+  var k=0;for(var i=0;i<n;i++)if(Math.random()<p)k++;return k/n;
+}
+function varFac(n){return n===1?1:n===2?0.5:Math.PI/(2*n)}
+function theil(a){var s=[];for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)s.push((a[j]-a[i])/(j-i));return med(s)}
+function autoSpread(a,n){
+  var l=a.map(function(x){return Math.log(x)}),s=0,c=0;
+  for(var i=1;i<l.length;i++){var d=l[i]-l[i-1];s+=d*d;c++}
+  return Math.max(0.05,Math.sqrt(s/(2*c))/Math.sqrt(varFac(n)));
+}
+function shiftOf(cont,up,a,b){return cont?(up?b-a:a-b)/a:(up?b-a:a-b)}
+function quantile(sorted,p){var i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)}
+// ---- log-density machinery (avoids underflow far in the tail) ----
+function logSumExp(a){var m=-Infinity,i;for(i=0;i<a.length;i++)if(a[i]>m)m=a[i];if(m===-Infinity)return m;var s=0;for(i=0;i<a.length;i++)s+=Math.exp(a[i]-m);return m+Math.log(s)}
+function robustSD(a){
+  var s=a.slice().sort(function(x,y){return x-y}),iqr=quantile(s,0.75)-quantile(s,0.25);
+  if(iqr>0)return iqr/1.349;
+  var m=0,i;for(i=0;i<a.length;i++)m+=a[i];m/=a.length;var v=0;for(i=0;i<a.length;i++)v+=(a[i]-m)*(a[i]-m);
+  return Math.sqrt(v/a.length);
+}
+function densLog(a,t){
+  var sd=robustSD(a);
+  if(!(sd>0))return Math.abs(t-a[0])<1e-12?0:-Infinity;
+  var h=0.9*sd*Math.pow(a.length,-0.2),s=new Array(a.length),i,z;
+  for(i=0;i<a.length;i++){z=(t-a[i])/h;s[i]=-0.5*z*z-0.9189385332046727}
+  return logSumExp(s)-Math.log(a.length*h);
+}
+// ---- model draws ----
+// o: {cont, up, sig, p0, B, P, n}
+function baseDraws(o,R){var a=new Array(R),i;for(i=0;i<R;i++)a[i]=o.cont?chartMed(o.B,function(){return contPoint(1,o.sig,o.n)}):chartMed(o.B,function(){return binom(o.n,o.p0)});return a}
+function drawFinal(o,delta,R){
+  var f1=o.up?1+delta:1-delta,p1=Math.min(0.995,Math.max(0.005,o.p0+(o.up?delta:-delta))),a=new Array(R),i;
+  for(i=0;i<R;i++)a[i]=o.cont?chartMed(o.P,function(){return contPoint(f1,o.sig,o.n)}):chartMed(o.P,function(){return binom(o.n,p1)});
+  return a;
+}
+function shiftsFrom(o,bd,fd){var s=new Array(bd.length),i;for(i=0;i<bd.length;i++)s[i]=shiftOf(o.cont,o.up,bd[i],fd[i]);return s}
+function buildGrid(mid,tObs){
+  var dmax=Math.max(5*mid,1.5*Math.abs(tObs),mid*1.0001),N=40,grid=[],prev=0,i,hi;
+  for(i=1;i<=N;i++){
+    hi=mid*Math.pow(dmax/mid,i/N);
+    grid.push({lo:prev,hi:hi,d:Math.sqrt(prev*hi),w:hi-prev});
+    prev=hi;
+  }
+  grid.dmax=dmax;
+  return grid;
+}
+// Full-Bayes assessment of "did the end level improve?" with a spike at no-change
+// and a uniform prior over effect sizes on (0, dmax].
+// Returns via done(): {pImp, pMid, medDelta, loDelta, hiDelta, logm0, env:[lo,hi], grid}
+function makeAssess(o,tObs,mid,R){
+  var bd=baseDraws(o,R),fd0=drawFinal(o,0,R),s0=shiftsFrom(o,bd,fd0);
+  var logm0=densLog(s0,tObs),grid=buildGrid(mid,tObs),idx=0,dens=[],logs=[];
+  function step(batch){
+    var end=Math.min(idx+batch,grid.length);
+    for(;idx<end;idx++){
+      var c=grid[idx],s=shiftsFrom(o,bd,drawFinal(o,c.d,R)),f=densLog(s,tObs);
+      dens.push(f);logs.push(f+Math.log(c.w));
+    }
+    return idx>=grid.length;
+  }
+  function result(){
+    var logdmax=Math.log(grid.dmax);
+    var logm1=logSumExp(logs)-logdmax;
+    var logBF=logm1-logm0;
+    var pImp=1/(1+Math.exp(-logBF));
+    var parts=[],i;
+    for(i=0;i<grid.length;i++){
+      var c=grid[i],eff=c.hi-Math.max(c.lo,mid);
+      if(eff>0)parts.push(dens[i]+Math.log(eff));
+    }
+    var logm1b=parts.length?logSumExp(parts)-logdmax:-Infinity;
+    var pMid=1/(1+Math.exp(logm0-logm1b));
+    var cs=[];
+    for(i=0;i<grid.length;i++){cs.push({lo:grid[i].lo,hi:grid[i].hi,w:Math.exp(logs[i])});}
+    var sum=0;for(i=0;i<cs.length;i++)sum+=cs[i].w;
+    for(i=0;i<cs.length;i++)cs[i].w/=sum;
+    function qdelta(p){
+      var acc=0,i;
+      for(i=0;i<cs.length;i++){
+        if(acc+cs[i].w>=p){
+          var frac=(p-acc)/cs[i].w;
+          return cs[i].lo+(cs[i].hi-cs[i].lo)*frac;
+        }
+        acc+=cs[i].w;
+      }
+      return cs[cs.length-1].hi;
+    }
+    var env=[quantile(fd0.slice().sort(function(a,b){return a-b}),0.025),quantile(fd0.slice().sort(function(a,b){return a-b}),0.975)];
+    return {pImp:pImp,pMid:pMid,medDelta:qdelta(0.5),loDelta:qdelta(0.1),hiDelta:qdelta(0.9),logm0:logm0,env:env,dmax:grid.dmax};
+  }
+  return {step:step,result:result,total:grid.length};
+}
+// Baseline steadiness checks (raw data always available in this tool)
+function steady(a,n,P){
+  var B=a?a.length:0,res=[],ok=true,i;
+  var add=function(name,s,soft){res.push({name:name,s:s,soft:!!soft});if(s==='fail'&&!soft)ok=false};
+  if(a&&B>=3){
+    var d=0,c=0;for(i=1;i<B;i++){var df=a[i]-a[i-1];d+=df*df;c++}
+    var noise=c?Math.sqrt(d/(2*c)):0,sxx=B*(B*B-1)/12;
+    var z=noise>0?Math.abs(theil(a))*Math.sqrt(sxx)/noise:0;
+    add('Baseline is not clearly rising or falling',B<4?'na':z>2.5?'fail':'pass');
+    var h=Math.floor(B/2),z2=0;
+    if(B>=6&&noise>0)z2=Math.abs(med(a.slice(B-h))-med(a.slice(0,h)))/(noise*1.25*Math.sqrt(2/h));
+    add('Baseline level holds: first and second halves are similar',B<6?'na':z2>2.5?'fail':'pass');
+    var cnt={},mx=0;a.forEach(function(x){cnt[x]=(cnt[x]||0)+1;if(cnt[x]>mx)mx=cnt[x]});
+    add('Values are not heavily repeated (repeats make medians jump)',mx/B>0.5?'fail':'pass',true);
+  }
+  add('Enough baseline points (8 or more is best)',B>=8?'pass':'fail',true);
+  add('Enough points after the latest change (4 or more)',P>=4?'pass':'fail',true);
+  add('Enough patients per point (5 or more)',n>=5?'pass':'fail',true);
+  return {res:res,ok:ok};
+}
+if(typeof module!=='undefined')module.exports={invPhi,randn,medNormal,med,chartMed,contPoint,binom,varFac,theil,autoSpread,shiftOf,logSumExp,robustSD,densLog,baseDraws,drawFinal,shiftsFrom,buildGrid,makeAssess,steady,quantile};
+// ================= END ENGINE =================
+
+if(typeof document!=='undefined'){
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var PH=[{id:'Base',name:'Baseline'},{id:'1',name:'PDSA 1'},{id:'2',name:'PDSA 2'},{id:'3',name:'PDSA 3'}];
+  window.type=null;window.n=null;window.cycles=1;
+  var calculated=false,timer=null,token=0,lastChart=null;
+  var nOptions={continuous:[1,5,10,20],proportion:[5,10,20,50]};
+  function parseNums(str){return str.split(/[\s,;]+/).filter(function(s){return s!==''}).map(Number).filter(function(v){return isFinite(v)})}
+  function fmt(x,d){return (Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toString()}
+  function renderNButtons(){
+    var row=$('nRow');row.innerHTML='';
+    if(!type){$('hintN').textContent='Choose what you measured in step 1 first.';return}
+    nOptions[type].forEach(function(v){
+      var b=document.createElement('button');
+      b.className='btn'+(n===v?' active':'');b.textContent=v+(v===1?' patient':' patients');
+      b.onclick=function(){n=v;renderNButtons();updateAll()};row.appendChild(b);
+    });
+    var cs=document.createElement('select');cs.setAttribute('aria-label','Custom number of patients');
+    cs.style.cssText='width:auto;margin-top:0;padding:9px 12px;font-weight:600;border-radius:10px';
+    var isCustom=n!==null&&nOptions[type].indexOf(n)<0;
+    var ph=document.createElement('option');ph.value='';ph.textContent=isCustom?n+' patients (custom)':'Custom…';cs.appendChild(ph);
+    var opts=type==='continuous'?[2,3,4,6,7,8,9,12,15,25,30,40,50]:[2,3,4,6,7,8,15,25,30,40,75,100];
+    opts.forEach(function(v){var o=document.createElement('option');o.value=v;o.textContent=v+' patients';cs.appendChild(o)});
+    if(isCustom){cs.style.background='#16150f';cs.style.color='#fff';cs.style.borderColor='#16150f'}
+    cs.onchange=function(){if(cs.value){n=parseInt(cs.value);renderNButtons();updateAll()}};
+    row.appendChild(cs);
+  }
+  function showPhases(){
+    PH.forEach(function(p,i){
+      if(i===0)return;
+      $('rowR'+p.id).classList.toggle('hide',i>cycles);
+    });
+    for(var c=1;c<=3;c++)$('btnCyc'+c).className='btn'+(c===cycles?' active':'');
+  }
+  window.setCycles=function(c){cycles=c;showPhases();updateAll()};
+  window.setType=function(t){
+    if(t===type)return;
+    type=t;calculated=false;n=null;
+    $('btnCont').className='btn'+(t==='continuous'?' active':'');
+    $('btnProp').className='btn'+(t==='proportion'?' active':'');
+    $('dir').value='';$('mid').value='';
+    PH.forEach(function(p,i){
+      $('raw'+p.id).value='';
+      $('count'+p.id).textContent='0';
+      var nm=i===0?'Baseline values':'Values after '+p.name;
+      var unit=t==='continuous'?' (times or amounts)':' (as percentages, e.g. 82)';
+      $('lbl'+p.id).textContent=nm+' (comma or space separated, in time order)'+unit;
+    });
+    $('lblMid').textContent='Smallest improvement that matters '+(t==='continuous'?'(%)':'(percentage points)');
+    $('hintMid').innerHTML=t==='continuous'?'For times, enter a percentage: <strong>15</strong> means the true level must be at least 15% better (e.g. faster) than baseline.':'Enter percentage points: <strong>10</strong> means the true level must be at least 10 points higher (or lower, per your direction) than baseline.';
+    renderNButtons();updateAll();
+  };
+  window.processRaw=function(){updateAll()};
+  window.updateAll=function(){
+    clearTimeout(timer);token++;
+    var o=state();hints(o);updateGate(o);
+    if(calculated&&!o.miss.length&&!o.bad)timer=setTimeout(compute,150);
+    else showWaiting(o);
+  };
+  window.calculate=function(){
+    var o=state();calculated=true;clearTimeout(timer);token++;hints(o);updateGate(o);
+    if(o.miss.length||o.bad)showWaiting(o,true);else compute();
+    if(window.innerWidth<900&&$('verdictCard').scrollIntoView)$('verdictCard').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  function updateGate(o){
+    $('calcHint').textContent=o.miss.length?'Still to set: '+o.miss.join(', ')+'.':(o.bad?'Fix the problem with your data above.':'All inputs set. Press "Assess my project".');
+  }
+  function showWaiting(o,clicked){
+    var list=o.miss.length?'Still to set: <strong>'+o.miss.join('</strong>, <strong>')+'</strong>.':(o.bad?'<strong>'+o.bad+'</strong>':'All inputs are set. Press <strong>Assess my project</strong> to see the result.');
+    setCard('','NOT ASSESSED YET','Not assessed','Complete every step, then press the button',list,'');
+    clearBoxes();drawChart(null);
+  }
+  function state(){
+    var o={cont:type==='continuous',miss:[],n:n,C:cycles,ph:[],sig:null,spreadNote:'',bad:null,mid:null};
+    for(var i=0;i<=cycles;i++)o.ph.push({name:PH[i].name,k:0,arr:null,med:null});
+    if(!type){o.miss.push('step 1: what you measured');return o}
+    var d=$('dir').value;if(!d)o.miss.push('step 1: which direction is better');else o.up=d==='up';
+    if(n===null)o.miss.push('step 2: patients per data point');
+    var all=[],complete=true,arrs=[];
+    o.ph.forEach(function(p,i){
+      var a=parseNums($('raw'+PH[i].id).value);arrs.push(a);all=all.concat(a);
+      p.k=a.length;$('count'+PH[i].id).textContent=a.length;
+      if(!a.length){complete=false;o.miss.push(i===0?'step 3: baseline values':'step 3: values after '+p.name)}
+    });
+    if(complete){
+      if(!o.cont&&Math.max.apply(null,all)>1){arrs=arrs.map(function(a){return a.map(function(x){return x/100})});all=all.map(function(x){return x/100})}
+      if(!o.cont&&all.some(function(x){return x<0||x>1}))o.bad='Proportions must be between 0 and 100 (percent).';
+      else if(o.cont&&all.some(function(x){return x<=0}))o.bad='Times or amounts must be above zero.';
+      else o.ph.forEach(function(p,i){p.arr=arrs[i];p.med=med(arrs[i])});
+    }
+    if(o.cont){
+      var np=$('noisePreset').value,b0=o.ph[0];
+      if(np==='auto'){
+        if(b0.k>=3&&b0.arr&&!o.bad){o.sig=autoSpread(b0.arr,n);o.spreadNote='estimated from how much your baseline points vary'}
+        else if(!o.miss.length)o.miss.push('step 4: variation (your baseline has fewer than 3 points, so pick a level)');
+      }else if(np){o.sig=parseFloat(np);o.spreadNote='from the variation level you chose'}
+      else o.miss.push('step 4: how much variation');
+    }
+    var mv=parseFloat($('mid').value);
+    if(!isFinite(mv)||mv<=0)o.miss.push('step 5: the smallest improvement that matters');
+    else{
+      o.mid=mv/100;
+      if(!o.cont&&o.ph[0].med!==null&&o.ph[0].med+o.mid>0.995)o.bad='Your bar sits at or above 100% — no data could ever clear it. Choose a smaller bar.';
+    }
+    return o;
+  }
+  function hints(o){
+    var cont=o.cont,b0=o.ph[0];
+    $('hintN').textContent='';$('hintNoise').innerHTML='';$('hintShift').innerHTML='';
+    if(!type)return;
+    if(n===null){$('hintN').textContent='Choose how many patients sit behind each point on your chart.';return}
+    if(b0.med===null||o.bad){$('hintN').innerHTML='Each data point is the median of <strong>'+n+(n===1?' patient':' patients')+'</strong>. Enter your data to see how far luck alone can move a point.';return}
+    var base=b0.med,p0=Math.min(0.995,Math.max(0.005,base));
+    var ptSd=cont?(o.sig||0.514)*Math.sqrt(varFac(n)):Math.sqrt(p0*(1-p0)/n);
+    if(cont){
+      $('hintN').innerHTML='Each data point is the median of <strong>'+n+(n===1?' patient':' patients')+'</strong>, so by luck alone a point can plausibly land anywhere from about <strong>'+fmt(base*Math.exp(-2*ptSd),1)+'</strong> to <strong>'+fmt(base*Math.exp(2*ptSd),1)+'</strong> when the true level is '+fmt(base,1)+'.';
+      if(o.sig)$('hintNoise').innerHTML='The middle half of individual patients fall between about <strong>'+fmt(base*Math.exp(-0.6745*o.sig),1)+'</strong> and <strong>'+fmt(base*Math.exp(0.6745*o.sig),1)+'</strong> ('+o.spreadNote+').';
+      else $('hintNoise').textContent='Choose a variation level, or add 3+ baseline points to estimate it.';
+    }else{
+      $('hintN').innerHTML='Each data point is based on <strong>'+n+' patients</strong>, so by luck alone a point can plausibly land anywhere from about <strong>'+fmt(Math.max(0,p0-2*ptSd)*100,0)+'%</strong> to <strong>'+fmt(Math.min(1,p0+2*ptSd)*100,0)+'%</strong> when the true level is '+fmt(p0*100,0)+'%.';
+    }
+    if(o.up!==null){
+      var lines=[];
+      for(var i=1;i<o.ph.length;i++){
+        var p=o.ph[i];if(p.med===null)continue;
+        var sh=shiftOf(cont,o.up,base,p.med);
+        lines.push('After '+p.name+': '+(sh>0?'<strong>'+shiftTxt(cont,sh)+'</strong> better than baseline':sh<0?'<strong>'+shiftTxt(cont,sh)+'</strong> worse than baseline':'no change from baseline'));
+      }
+      if(lines.length)$('hintShift').innerHTML=lines.join('<br>');
+    }
+  }
+  function shiftTxt(cont,t){return fmt(Math.abs(t)*100,0)+(cont?'%':' percentage points')}
+  function setCard(band,pill,big,word,odds,odds2){
+    $('verdictCard').className='card verdict'+(band?' '+band:'');
+    $('pill').className='pill'+(band?' '+band:'');$('pill').textContent=pill;
+    $('bigPct').textContent=big;$('bigWord').textContent=word;
+    $('oddsLine').innerHTML=odds;$('oddsLine2').innerHTML=odds2||'';
+    var pc=/%$/.test(big)?parseFloat(big):0;
+    $('pbarFill').style.width=(isFinite(pc)?pc:0)+'%';
+  }
+  function clearBoxes(){$('boxNow').innerHTML='';$('boxEffect').innerHTML='';$('boxCycles').innerHTML='';$('boxQuality').innerHTML=''}
+
+  function pctTxt(p){var pc=Math.round(p*100);return (pc>=99?'99+':pc)+'%'}
+
+  function compute(){
+    var o=state();
+    if(o.miss.length){showWaiting(o,true);return}
+    if(o.bad){setCard('','NO RESULT','Not calculable','Check your data','<strong>'+o.bad+'</strong>','');clearBoxes();drawChart(null);return}
+    var my=++token;
+    var a=o.ph[0],last=o.ph[o.C],cont=o.cont;
+    var base=a.med,post=last.med,tObs=shiftOf(cont,o.up,base,post);
+    var p0=cont?1:Math.min(0.995,Math.max(0.005,base));
+    var model={cont:cont,up:o.up,sig:o.sig||0,p0:p0,B:a.k,P:last.k,n:o.n};
+    clearBoxes();
+    var A=makeAssess(model,tObs,o.mid,2500);
+    function tick(){
+      if(my!==token)return;
+      if(!A.step(5)){setTimeout(tick,0);return}
+      renderMain(o,A.result(),tObs,base,post);
+      renderTable(o,my);
+    }
+    setTimeout(tick,0);
+  }
+
+  function renderMain(o,r,tObs,base,post){
+    var cont=o.cont,pc=Math.round(r.pImp*100),pm=Math.round(r.pMid*100);
+    var a=o.ph[0],last=o.ph[o.C],B=a.k,P=last.k;
+    var st=steady(a.arr,n,P),cn=[];
+    if(B<8)cn.push('only '+B+' baseline point'+(B>1?'s':'')+' (8 or more recommended)');
+    if(P<4)cn.push('only '+P+' point'+(P>1?'s':'')+' after the latest change (4 or more recommended)');
+    if(n<5)cn.push('only '+n+' patient'+(n>1?'s':'')+' per point (5 or more recommended)');
+    if(!st.ok)cn.push('a baseline that does not look steady');
+    var thin=cn.length>0;
+    var band,word,pill;
+    if(pc>=95){band='green';word=pm>=95?(thin?'Real, clears your bar — thin data':'Real, and it clears your bar'):'Real, but probably below your bar';pill=pm>=95?(thin?'REAL — THIN DATA':'REAL, BAR CLEARED'):'REAL, BAR NOT CLEARED';}
+    else if(pc>=85){band='amber';word='Probably real'+(pm>=50?' and near your bar':'');pill='PROBABLY REAL';}
+    else if(pc>=60){band='amber';word='A hint of improvement, not yet convincing';pill='NOT CONVINCING';}
+    else{band='red';word='Little evidence of a real improvement';pill='NOT SHOWN';}
+    setCard(band,pill,pc+'%',word,
+      'Chance the improvement reaches your bar ('+shiftTxt(cont,o.mid)+'): <strong>'+pctTxt(r.pMid)+'</strong>',
+      'Your end-phase median moved '+shiftTxt(cont,tObs)+' versus baseline.');
+    $('boxNow').innerHTML='<strong>What this means</strong>'+
+      (pc>=95?
+        (pm>=95?
+          (thin?'A real improvement that clears your bar is the best explanation for your chart. But the data set falls short of good practice ('+cn.join('; ')+'), so treat it as earned-on-balance, not settled.':'A real improvement that clears your bar is the best explanation for your chart. Record it as a success, and keep an eye on the process to check it holds.')
+          :'Something real probably happened, but the best guess is that it falls short of the bar you set. That is worth knowing: the change may not be worth its cost unless it is cheap and harmless.')
+        :pc>=85?'Probably a real improvement, but luck is not ruled out. If the project is finished, report it as promising with the uncertainty stated; do not overclaim.'
+        :pc>=60?'There are signs of improvement, but your data cannot rule out luck. If more data can still be collected, that is the cheapest way to find out.'
+        :'Your data are consistent with the process simply being unchanged. If the chart looks no better than baseline, the honest end-of-project answer is that the improvement is not demonstrated.');
+    var envTxt=cont?fmt(r.env[0]*base,1)+' to '+fmt(r.env[1]*base,1):fmt(r.env[0]*100,0)+'% to '+fmt(r.env[1]*100,0)+'%';
+    var est=cont?fmt(r.medDelta*100,0)+'%':fmt(r.medDelta*100,1)+' pp';
+    var lo=cont?fmt(r.loDelta*100,0)+'%':fmt(r.loDelta*100,1)+' pp';
+    var hi=cont?fmt(r.hiDelta*100,0)+'%':fmt(r.hiDelta*100,1)+' pp';
+    var cls=pm>=50?'bar-hit':'bar-miss';
+    $('boxEffect').innerHTML='<strong>The improvement you got</strong>'+
+      'Best single guess at the true improvement: <strong>'+est+'</strong>, with an 80% range of <strong>'+lo+' to '+hi+'</strong>. Your bar was <strong>'+shiftTxt(cont,o.mid)+'</strong> — the chance the true improvement clears it is <b class="'+cls+'">'+pctTxt(r.pMid)+'</b>.'+
+      '<br><br>If your change had done nothing, your final-phase median would plausibly have landed between <strong>'+envTxt+'</strong> by luck alone (given a baseline level of '+(cont?fmt(base,1):fmt(base*100,0)+'%')+').'+(tObs<=0?'<br><br>Your end-phase median is not better than your baseline, so these numbers lean towards "no real improvement" — check the direction setting in step 1 if that contradicts the chart.':'');
+    var li=st.res.map(function(q){var c=q.s==='fail'?(q.soft?'warn':'bad'):q.s==='pass'?'ok':'';return '<li><b class="'+c+'">'+(q.s==='fail'?'Concern':q.s==='pass'?'Pass':'Not enough points')+'</b> '+q.name+'</li>'}).join('');
+    $('boxQuality').innerHTML='<strong>Quality of your data</strong><ul>'+li+'</ul>'+
+      (!st.ok?'<p style="margin-top:6px;font-size:.86rem"><b class="bad">Your baseline does not look steady.</b> The probability above assumes it is, so it is probably too high.</p>':'')+
+      '<p style="margin-top:6px;font-size:.86rem"><b class="warn">What the maths cannot see:</b> surges, staff sickness, case mix and season. If any of them lined up with your change, part of the shift may belong to them. Consecutive points that drift together (common in EDs) also make this percentage flattering.</p>';
+    drawChart(o,r,base,post,tObs);
+  }
+
+  function renderTable(o,my){
+    if(o.C<2){$('boxCycles').innerHTML='';return}
+    var rows=[],i;
+    for(i=1;i<=o.C;i++){
+      rows.push({label:o.ph[i].name+' compared with baseline',a:0,b:i,head:i===o.C});
+      if(i>=2)rows.push({label:o.ph[i].name+' compared with '+o.ph[i-1].name,a:i-1,b:i,prev:true});
+    }
+    var ri=0,html='';
+    function tick(){
+      if(my!==token)return;
+      if(ri>=rows.length){
+        $('boxCycles').innerHTML='<strong>Cycle by cycle</strong><p>"Compared with baseline" asks whether the process after that cycle was better than where you began. "Compared with" the previous cycle asks whether that cycle added anything on top of the one before. The shaded row is the headline result above.</p>'+
+          '<div class="tbl-scroll"><table class="cyc"><thead><tr><th>Comparison</th><th>Shift</th><th>Chance real</th><th>Chance ≥ bar</th></tr></thead><tbody>'+html+'</tbody></table></div>';
+        return;
+      }
+      var r=rows[ri++],A=o.ph[r.a],B=o.ph[r.b];
+      var t=shiftOf(o.cont,o.up,A.med,B.med);
+      var model={cont:o.cont,up:o.up,sig:o.sig||0,p0:o.cont?1:Math.min(0.995,Math.max(0.005,A.med)),B:A.k,P:B.k,n:o.n};
+      var As=makeAssess(model,t,o.mid,800);
+      while(!As.step(10));
+      var res=As.result();
+      var sh=t>0?shiftTxt(o.cont,t)+' better':t<0?shiftTxt(o.cont,t)+' worse':'No change';
+      html+='<tr class="'+(r.prev?'vsprev ':'')+(r.head?'headline':'')+'"><td>'+r.label+'</td><td>'+sh+'</td><td>'+(t>0?pctTxt(res.pImp):'<b class="bad">No improvement</b>')+'</td><td>'+(t>0?pctTxt(res.pMid):'–')+'</td></tr>';
+      setTimeout(tick,0);
+    }
+    setTimeout(tick,0);
+  }
+
+  function drawChart(o,r,base,post,tObs){
+    lastChart=arguments.length>1?{o:o,r:r,base:base,post:post,tObs:tObs}:null;
+    var cv=$('chart');
+    if(!o){var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);return}
+    var dpr=window.devicePixelRatio||1,W=cv.clientWidth||600,H=280;
+    cv.width=W*dpr;cv.height=H*dpr;
+    var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+    var cont=o.cont,vals=[],segs=[],i,k,x=0;
+    for(i=0;i<=o.C;i++){
+      var arr=o.ph[i].arr.map(function(v){return cont?v:v*100});
+      segs.push({start:x,pts:arr,name:o.ph[i].name});x+=arr.length;
+      vals=vals.concat(arr);
+    }
+    var env=[cont?r.env[0]*base:r.env[0]*100,cont?r.env[1]*base:r.env[1]*100];
+    var lo=Math.min.apply(null,vals.concat(env)),hi=Math.max.apply(null,vals.concat(env));
+    var pad=(hi-lo)*0.1||1;lo-=pad;hi+=pad;
+    var L=44,Rm=12,T=14,Bm=26;
+    function X(idx){return L+(W-L-Rm)*(idx/(x-1||1))}
+    function Y(v){return T+(H-T-Bm)*(1-(v-lo)/(hi-lo))}
+    var lastSeg=segs[segs.length-1];
+    ctx.fillStyle='rgba(250,80,15,0.13)';
+    ctx.fillRect(X(lastSeg.start),Y(env[1]),X(x-1)-X(lastSeg.start)+6,Y(env[0])-Y(env[1]));
+    ctx.strokeStyle='#d9cfbc';ctx.setLineDash([5,4]);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(L,Y(cont?base:base*100));ctx.lineTo(W-Rm,Y(cont?base:base*100));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font='11px system-ui';ctx.fillStyle='#8a8172';
+    ctx.fillText(cont?'baseline median':'baseline',L+2,Y(cont?base:base*100)-5);
+    for(i=0;i<segs.length;i++){
+      var sg=segs[i],med=cont?o.ph[i].med:o.ph[i].med*100,col=i===0?'#a49b8c':'#fa500f';
+      if(i>0){ctx.strokeStyle='#e9e1d2';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X(sg.start)-0.5,T);ctx.lineTo(X(sg.start)-0.5,H-Bm);ctx.stroke();ctx.setLineDash([]);}
+      ctx.strokeStyle=col;ctx.globalAlpha=i===0?0.7:1;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(X(sg.start),Y(med));ctx.lineTo(X(sg.start+sg.pts.length-1),Y(med));ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.fillStyle=col;
+      for(k=0;k<sg.pts.length;k++){ctx.beginPath();ctx.arc(X(sg.start+k),Y(sg.pts[k]),3.2,0,6.284);ctx.fill()}
+      ctx.fillStyle='#8a8172';ctx.textAlign='center';
+      ctx.fillText(sg.name,X(sg.start+(sg.pts.length-1)/2),H-8);
+      ctx.textAlign='left';
+    }
+    ctx.fillStyle='#8a8172';ctx.textAlign='right';
+    ctx.fillText(fmt(hi-pad,cont?1:0),L-6,T+8);
+    ctx.fillText(fmt(lo+pad,cont?1:0),L-6,H-Bm-2);
+    ctx.textAlign='left';
+    $('chartCap').innerHTML='The shaded band is where your final-phase median would plausibly wander if your change had done nothing. A final median clearly outside the band is what drives the headline probability.';
+  }
+  window.addEventListener('resize',function(){if(lastChart)drawChart(lastChart.o,lastChart.r,lastChart.base,lastChart.post,lastChart.tObs)});
+  window.addEventListener('load',function(){showPhases();renderNButtons();updateAll()});
+})();
+}
+</script>
+</body>
+</html>
