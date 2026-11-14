@@ -112,6 +112,7 @@
 <div class="wrap">
 
   <header class="site">
+    <!-- EmergApps end-of-project assessment — version 5 -->
       <img src="images/EmergApps logo.png" style="width: 100px; padding-bottom: 20px; max-width: 20%;" alt="EmergApps">
     <h1>The end of your project:<br><br>did it <span class="accent">actually</span> work?</h1>
     <p class="sub">An end-of-project assessment for QI teams. Not pass or fail, not a p-value — a graded, honest probability, judged against the smallest improvement you would have accepted at the start.</p>
@@ -623,7 +624,13 @@ if(typeof document!=='undefined'){
     else if(pm>=50){barBand='green';barBig=pctTxt(r.pMid);barWord='More likely than not to clear your bar';barPill='BAR CLEARED';}
     else if(pm>=20){barBand='amber';barBig=pctTxt(r.pMid);barWord='Could clear your bar, but more likely not';barPill='BAR NOT CLEARED';}
     else{barBand='red';barBig=pctTxt(r.pMid);barWord='Probably falls short of your bar';barPill='BAR NOT CLEARED';}
-    setBarCard(barBand,barPill,barBig,barWord,'Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.');
+    var barSub='Your end level ('+e.name+') moved '+shiftTxt(cont,tObs)+' versus baseline.';
+    if(!flipped){
+      var estTxt=cont?fmt(r.delta*100,0)+'%':fmt(r.delta*100,1)+' pp';
+      barSub='Your chart moved '+shiftTxt(cont,tObs)+' versus baseline; allowing for luck, the best guess at the true improvement is <strong>'+estTxt+'</strong>, against your bar of <strong>'+shiftTxt(cont,o.mid)+'</strong>.';
+      if(!cont&&tObs>o.mid&&r.pMid<0.5)barSub+=' With only '+n+' patients behind each point, a chart this good is what a true improvement of about '+estTxt+' typically looks like — a small sample flatters the chart, which is why the chance sits below 50%.';
+    }
+    setBarCard(barBand,barPill,barBig,barWord,barSub);
     if(flipped){
       $('boxNow').innerHTML='<strong>What this means</strong>Your end-phase median is not better than your baseline, so the data give little support to "the project worked". If anything they point the other way. Check the direction setting in step 1 if this contradicts your chart, and be cautious about attributing the change to anything but noise or context.';
       $('boxEffect').innerHTML='<strong>The improvement you got</strong>No improvement to size up: the end level did not beat baseline. If your change had done nothing, your end median would plausibly have landed between <strong>'+(cont?fmt(r.env[0]*base,1)+' to '+fmt(r.env[1]*base,1):fmt(r.env[0]*100,0)+'% to '+fmt(r.env[1]*100,0)+'%')+'</strong> by luck alone (given a baseline level of '+(cont?fmt(base,1):fmt(base*100,0)+'%')+').';
